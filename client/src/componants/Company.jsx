@@ -40,6 +40,8 @@ function Company() {
   const [balance, setBalance] = useState(0);
 
   const [showOnly, setShowOnly] = useState("All");
+  const [sortBy, setSortBy] = useState("Id");
+  const [defaultEmployeeDetail, setDefaultEmployeeDetail] = useState([]);
 
   async function abc(){
     setLoading(true);
@@ -47,6 +49,7 @@ function Company() {
     setDetails(data_);
     data_ =  await contract.methods.getEmployeeDetails().call({from: account})
     setEmployeeDetails(data_);
+    setDefaultEmployeeDetail(data_);
     console.log(data_)
     setTimeout(() => {setLoading(false)}, 4000);
     // setLoading(false);
@@ -54,6 +57,34 @@ function Company() {
   useEffect(() => {
       abc();
   },[account])
+
+  useEffect(() => {
+    let tmp = [];
+    let tmp2 = [];
+    tmp = employeeDetails.slice(); 
+    if(sortBy == 'Default'){
+      setEmployeeDetails(defaultEmployeeDetail);
+    }else if(sortBy == 'Count'){
+
+      if(tmp.length > 0){
+        while(tmp.length){
+          let t = tmp.pop();
+          if(tmp2.length == 0){
+            tmp2.push(t);
+          }else{
+            while(tmp2.length > 0 && tmp2[tmp2.length-1].product_count > t.product_count){
+              tmp.push(tmp2.pop());
+            }
+            tmp2.push(t);
+          }
+        }
+      }
+      setEmployeeDetails(tmp2);
+    }else if(sortBy == 'Name'){
+      tmp.sort((a, b) => a.name.normalize().localeCompare(b.name.normalize()));
+      setEmployeeDetails(tmp);
+    }
+  }, [sortBy])
 
   useEffect(() => {
     setTimeout(async () => {
@@ -107,7 +138,7 @@ function Company() {
     <div>
       {/* <Chart /> */}
      
-      {[  'sm'].map((expand) => (
+      {['sm'].map((expand) => (
         <Navbar key={expand} bg="dark"  expand={expand} className="mb-3">
           <Container fluid>
             <Navbar.Brand href="/" style={{"color":"white"}}>Vehicle Tracking</Navbar.Brand>
@@ -181,31 +212,60 @@ function Company() {
                   <Card.Footer style={{background:"#deb887"}}>
                   </Card.Footer>
                 </Card>
-                  <div class='container-md"'>
-                  <div>
 
-                  <div class="input-group col-md-4">
+                {['sm'].map((expand) => (
+                  <Navbar key={expand} bg="" style={{background:"#FFF8E1"}}  expand={expand} className="mb-3 rounded">
+                    <Container fluid>
+                      <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} />
+                      <Navbar.Offcanvas
+                        id={`offcanvasNavbar-expand-${expand}`}
+                        aria-labelledby={`offcanvasNavbarLabel-expand-${expand}`}
+                        placement="end"
+                      >
+                        <Offcanvas.Header closeButton>
+                          <Offcanvas.Title id={`offcanvasNavbarLabel-expand-${expand}`} style={{"color":"white"}}>
+                            Vehicle Tracking
+                          </Offcanvas.Title>
+                        </Offcanvas.Header>
+                        <Offcanvas.Body>
+                          <Nav className="justify-content-end flex-grow-1 pe-3">
+                            
+                          </Nav>
+                          <div class="input-group">
                     <div class="input-group-prepend">
-                      <span class="input-group-text" id="">Show</span>
+                      <span class="input-group-text ms-2" id="">Show</span>
                     </div>
-                    <select onClick={(e)=> {setShowOnly( e.target.value)}} className="form-control form-select" style={{maxWidth: '120px'}}>
+                    <select onClick={(e)=> {setShowOnly( e.target.value)}} className="form-control form-select" style={{maxWidth: '120px', marginLeft:'-5px'}}>
                       <option className="form-control rounded" selected>All</option>
                       <option className="form-control rounded">Kicked</option>
                       <option className="form-control rounded">Access</option>
                     </select>
                   </div>
-                  <div class="input-group col-md-6">
+                  <div class="input-group">
                     <div class="input-group-prepend">
                       <span class="input-group-text ms-2" id="">Sort By</span>
                     </div>
-                    <select onClick={(e)=> {setShowOnly( e.target.value)}} className="form-control form-select" style={{maxWidth: '120px'}}>
-                      <option className="form-control rounded" selected>Id</option>
+                    <select onClick={(e)=> {setSortBy( e.target.value)}} className="form-control form-select" style={{maxWidth: '120px', marginLeft:'-5px'}}>
+                      <option className="form-control rounded" selected>Default</option>
                       <option className="form-control rounded">Name</option>
                       <option className="form-control rounded">Count</option>
                     </select>
                   </div>
-                  </div>
-                  </div>
+                  <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text ms-2" id="">View</span>
+                      </div>
+                      <Button className='btn-secondary' onClick={() => {let tmp = employeeDetails.slice().reverse(); setEmployeeDetails(tmp)}}>Inverte</Button>
+                    </div>
+                          <Form className="d-flex">
+                          </Form>
+                        </Offcanvas.Body>
+                      </Navbar.Offcanvas>
+                    </Container>
+                  </Navbar>
+                ))}
+                
+                
                 <Row xs={1} md={3} className="g-2">
 
                 {employeeDetails.map((emp) => {
