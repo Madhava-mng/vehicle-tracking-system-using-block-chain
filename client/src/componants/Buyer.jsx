@@ -67,7 +67,7 @@ function Company() {
     setDetails(cus);
     setProductDetails(_details);
     setMintedProduct(minted);
-    console.log(minted);
+    //console.log(minted);
   }
 
   async function newCustomer(){
@@ -127,7 +127,7 @@ function Company() {
               </Offcanvas.Header>
               <Offcanvas.Body>
                 <Nav className="justify-content-end flex-grow-1 pe-3">
-                  <Link className='btn btn-outline-info ms-2' to="/seller"><img src={back} style={{maxBlockSize:'19px'}}/> Back</Link>
+                  <Link className='btn btn-outline-info ms-2' to="/"><img src={back} style={{maxBlockSize:'19px'}}/> Back</Link>
                   {/* <Link className='btn btn-outline-info ms-2' to="/company">Company</Link> */}
                  
                 </Nav>
@@ -174,7 +174,7 @@ function Company() {
                   <Card.Body style={{background:"#c9ffe5"}}>
                     <ListGroup variant="flush">
                       <ListGroup.Item style={{background:"#c9ffe5"}}>Name: {details[0]}</ListGroup.Item>
-                      <ListGroup.Item style={{background:"#c9ffe5"}}>No Of Products: {(details[2] == 0)? <span className="badge bg-warning">Nil</span>:details[5]}</ListGroup.Item>
+                      <ListGroup.Item style={{background:"#c9ffe5"}}>No Of Products: {(details[2] == 0)? <span className="badge bg-warning">Nil</span>:details[2]}</ListGroup.Item>
                     </ListGroup>
                   </Card.Body>
                 </Card>
@@ -280,7 +280,7 @@ function Company() {
           </div>
         </Card.Body>
         <Card.Footer className='bg-dark' style={{color:"white"}}>
-          <Link className='btn btn-outline-info ms-2' to="/seller"><img src={back} style={{maxBlockSize:'19px'}}/> Back</Link>
+          <Link className='btn btn-outline-info ms-2' to="/"><img src={back} style={{maxBlockSize:'19px'}}/> Back</Link>
           <br/>
          
         </Card.Footer>
