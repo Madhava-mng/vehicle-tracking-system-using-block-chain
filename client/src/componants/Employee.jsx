@@ -2,7 +2,7 @@ import React from 'react'
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
-import {Card, CardGroup, CardImg, FormControl, FormLabel, ListGroup, ListGroupItem, Row, Col} from 'react-bootstrap';
+import {Card, FormControl, ListGroup, ListGroupItem, Row, Col} from 'react-bootstrap';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
@@ -18,7 +18,6 @@ import back from '../png/back.png'
 
 function Company() {
 
-  const [isWallet, setIsWallet] = useState(false);
   const [hover, setHovering] = useState(4);
   const [iconsActive, setIconsActive] = useState('tab1');
   const [account, setAccount] = useState("");
@@ -57,7 +56,7 @@ function Company() {
     setTimeout(async () => {
       await connectWallet();
       setTmp(!tmp);
-    },10000);
+    },4000);
   }, [tmp])
   async function getDetails(){
     let _details = await contract.methods.getProductDetails().call({from:account});
@@ -93,8 +92,16 @@ function Company() {
     console.log(data);
   }
 
-  async function transferOwner(_addr){}
-  async function clearRequest(_addr){}
+  async function transferOwner(_addr){
+    let data = await contract.methods.transferOwner(_addr).send({from: account});
+    getDetails();
+    console.log(data);
+  }
+  async function clearRequest(_addr){
+    let data = await contract.methods.clearRequest(_addr).send({from: account});
+    getDetails();
+    console.log(data);
+  }
 
   return (
     <div>
@@ -146,16 +153,6 @@ function Company() {
                    Add Products
                 </MDBTabsLink>
               </MDBTabsItem>
-              <MDBTabsItem>
-                <MDBTabsLink onClick={() => handleIconsClick('tab4')} active={iconsActive === 'tab4'}>
-                  Mint
-                </MDBTabsLink>
-              </MDBTabsItem>
-              <MDBTabsItem>
-                <MDBTabsLink onClick={() => handleIconsClick('tab3')} active={iconsActive === 'tab3'}>
-                  Request
-                </MDBTabsLink>
-              </MDBTabsItem>
             </MDBTabs>
 
             <MDBTabsContent >
@@ -180,7 +177,7 @@ function Company() {
                     <Col>
                       <Card className='mb-3'>
                         <Card.Header style={{background:"#CE93D8"}}>
-                          # {pro.id} {(pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>}
+                          # {pro.id} {(pro.owner == pro.creator)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-success">Sold</span>}
                         </Card.Header>
                         <Card.Body style={{background:"#F3E5F5"}}>
                         <ListGroup variant="flush"  >
@@ -192,11 +189,13 @@ function Company() {
                           <ListGroupItem style={{background:"#F3E5F5"}}>Price: <span className='badge bg-info'>₹ {pro.price}</span></ListGroupItem>
                           <ListGroupItem style={{background:"#F3E5F5"}}>Origin: {pro.creator}</ListGroupItem>
                           <ListGroupItem style={{background:"#F3E5F5"}}>Requested: {pro.requested}</ListGroupItem>
+                          <ListGroupItem style={{background:"#F3E5F5"}}>Product Created Time: {new Date(pro.date * 1000).toString()}</ListGroupItem>
                         </ListGroup>
                         </Card.Body>
                         <Card.Footer style={{background:"#CE93D8"}}>
-                          <Button onClick={() => {taggleMintable(pro.id)}} className={`btn-${(pro.mintable)? "danger":"success"}`} disabled={!details[4]}>{(pro.mintable)? "Not Mint":"Mint"}</Button>
-                          {(pro.requested != '0x0000000000000000000000000000000000000000')? 
+                        
+                          {(pro.owner == pro.creator)? <Button onClick={() => {taggleMintable(pro.id)}} className={`btn-${(pro.mintable)? "danger":"success"}`} disabled={!details[4]}>{(pro.mintable)? "Not Mint":"Mint"}</Button>:<Button disabled>Sold out</Button>}
+                          {(pro.requested != '0x0000000000000000000000000000000000000000' && pro.owner == pro.creator)? 
                             <>
                               <Button className="ms-1 btn-danger"  onClick={() => {transferOwner(pro.id)}} disabled={!details[4]}>Transfer</Button>
                               <Button className="ms-1 btn-warning" onClick={() => {clearRequest(pro.id)}} disabled={!details[4]}>Clear</Button>
@@ -227,89 +226,7 @@ function Company() {
                     <Button className='ms-2' onClick={()=> {newProduct()}} disabled={isAddBtn}>Add Vehicle</Button>
                   </Card.Footer>
                 </Card>
-              </MDBTabsPane>
-
-
-              <MDBTabsPane show={iconsActive === 'tab3'} style={{textAlign:'left'}} className='m-1 p-3 rounded'>
-                
-              <Row xs={1} md={3} className="g-2">
-                {productDetails.map((pro) => {
-                  if(pro.requested !=  '0x0000000000000000000000000000000000000000'){
-                    return (
-                      <Col>
-                      <Card className='mb-3'>
-                        <Card.Header style={{background:"#CE93D8"}}>
-                          # {pro.id} {(pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>}
-                        </Card.Header>
-                        <Card.Body style={{background:"#F3E5F5"}}>
-                        <ListGroup variant="flush"  >
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Name: {pro.name}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>UniqId: {pro.uniqNumber}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Owned: {pro.owner} </ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Type: {pro.type_}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Number of time Sold: {(pro.noOFTimeSold  == 0)? <span className="badge bg-success">New</span>:pro.noOFTimeSold}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Price: <span className='badge bg-info'>₹ {pro.price}</span></ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Origin: {pro.creator}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Requested: {pro.requested}</ListGroupItem>
-                        </ListGroup>
-                        </Card.Body>
-                        <Card.Footer style={{background:"#CE93D8"}}>
-                          <Button onClick={() => {taggleMintable(pro.id)}} className={`btn-${(pro.mintable)? "danger":"success"}`} disabled={!details[4]}>{(pro.mintable)? "Not Mint":"Mint"}</Button>
-                          {(pro.requested != '0x0000000000000000000000000000000000000000')? 
-                            <>
-                              <Button className="ms-1 btn-danger"  onClick={() => {if(window.confirm("Once You Change The product is recoverable")){transferOwner()}}} disabled={!details[4]}>Transfer</Button>
-                              <Button className="ms-1 btn-warning" onClick={() => {clearRequest(pro.id)}} disabled={!details[4]}>Clear</Button>
-                            </>
-                            :<></>
-                          }
-                        </Card.Footer>
-                      </Card>
-                    </Col>
-                    )
-                  }
-                  })}
-                  </Row>
-              </MDBTabsPane>
-            
-            <MDBTabsPane show={iconsActive === 'tab4'} style={{textAlign:'left'}} className='m-1 p-4 rounded'>
-              <Row xs={1} md={3} className="g-2">
-                {productDetails.map((pro) => {
-                  if(pro.mintable){
-                    return (
-                      <Col>
-                      <Card className='mb-3'>
-                        <Card.Header style={{background:"#CE93D8"}}>
-                          # {pro.id} {(pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>}
-                        </Card.Header>
-                        <Card.Body style={{background:"#F3E5F5"}}>
-                        <ListGroup variant="flush"  >
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Name: {pro.name}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>UniqId: {pro.uniqNumber}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Owned: {pro.owner} </ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Type: {pro.type_}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Number of time Sold: {(pro.noOFTimeSold  == 0)? <span className="badge bg-success">New</span>:pro.noOFTimeSold}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Price: <span className='badge bg-info'>₹ {pro.price}</span></ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Origin: {pro.creator}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Requested: {pro.requested}</ListGroupItem>
-                        </ListGroup>
-                        </Card.Body>
-                        <Card.Footer style={{background:"#CE93D8"}}>
-                          <Button onClick={() => {taggleMintable(pro.id)}} className={`btn-${(pro.mintable)? "danger":"success"}`} disabled={!details[4]}>{(pro.mintable)? "Not Mint":"Mint"}</Button>
-                          {(pro.requested != '0x0000000000000000000000000000000000000000')? 
-                            <>
-                              <Button className="ms-1 btn-danger"  onClick={() => {if(window.confirm("Once You Change The product is recoverable")){transferOwner()}}} disabled={!details[4]}>Transfer</Button>
-                              <Button className="ms-1 btn-warning" onClick={() => {clearRequest()}} disabled={!details[4]}>Clear</Button>
-                            </>
-                            :<></>
-                          }
-                        </Card.Footer>
-                      </Card>
-                    </Col>
-                    )
-                  }
-                  })}
-                  </Row>
-              </MDBTabsPane>
+              </MDBTabsPane>              
             </MDBTabsContent>
           </div>
         </Card.Body>

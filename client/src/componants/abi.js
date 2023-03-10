@@ -1,4 +1,4 @@
-export const ProgramID = '0x850371edC42D042F5D67C98c42Ea572b26a671bd';
+export const ProgramID = '0xFf9705B4B44e55A5bE29872b65525F14eA6000ae';
 export const ABI = [
 	{
 		"inputs": [
@@ -21,6 +21,19 @@ export const ABI = [
 				"type": "bool"
 			}
 		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_addr",
+				"type": "address"
+			}
+		],
+		"name": "clearRequest",
+		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
@@ -98,6 +111,19 @@ export const ABI = [
 				"type": "address"
 			}
 		],
+		"name": "requestForTransfer",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_addr",
+				"type": "address"
+			}
+		],
 		"name": "taggleInside",
 		"outputs": [],
 		"stateMutability": "nonpayable",
@@ -112,6 +138,19 @@ export const ABI = [
 			}
 		],
 		"name": "taggleMintable",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_addr",
+				"type": "address"
+			}
+		],
+		"name": "transferOwner",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -171,6 +210,11 @@ export const ABI = [
 						"internalType": "bool",
 						"name": "mintable",
 						"type": "bool"
+					},
+					{
+						"internalType": "uint256",
+						"name": "date",
+						"type": "uint256"
 					}
 				],
 				"internalType": "struct OwnerShip.Product[]",
@@ -236,6 +280,11 @@ export const ABI = [
 						"internalType": "bool",
 						"name": "mintable",
 						"type": "bool"
+					},
+					{
+						"internalType": "uint256",
+						"name": "date",
+						"type": "uint256"
 					}
 				],
 				"internalType": "struct OwnerShip.Product[]",
@@ -286,6 +335,29 @@ export const ABI = [
 				"internalType": "struct OwnerShip.Company",
 				"name": "",
 				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getCustomerDetail",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -446,6 +518,11 @@ export const ABI = [
 						"internalType": "bool",
 						"name": "mintable",
 						"type": "bool"
+					},
+					{
+						"internalType": "uint256",
+						"name": "date",
+						"type": "uint256"
 					}
 				],
 				"internalType": "struct OwnerShip.Product[]",
@@ -490,6 +567,35 @@ export const ABI = [
 				"internalType": "bool",
 				"name": "opened",
 				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "map_customer",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "bool",
+				"name": "opened",
+				"type": "bool"
+			},
+			{
+				"internalType": "uint256",
+				"name": "nop",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -636,6 +742,11 @@ export const ABI = [
 				"internalType": "bool",
 				"name": "mintable",
 				"type": "bool"
+			},
+			{
+				"internalType": "uint256",
+				"name": "date",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",

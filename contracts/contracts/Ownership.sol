@@ -112,6 +112,7 @@ contract OwnerShip {
         address creator;
         address requested;
         bool mintable;
+        uint date;
     }
     mapping(address => Product) public map_products;
     mapping(address => address) public map_mintable;
@@ -122,7 +123,7 @@ contract OwnerShip {
         Employee memory emp = map_employee[msg.sender];
         if(emp.opened && emp.inside){
             address pid = genRandAddr();
-            Product memory pdt = Product(pid, _uniq, _name, _type, 0, _price, emp.owner,emp.owner, 0x0000000000000000000000000000000000000000,false);
+            Product memory pdt = Product(pid, _uniq, _name, _type,0, _price, emp.owner,emp.owner, 0x0000000000000000000000000000000000000000,false, block.timestamp);
             map_products[pid] = pdt;
             emp.product_count += 1;
             map_employee[msg.sender].products.push(pid);
@@ -172,7 +173,29 @@ contract OwnerShip {
             }
         }
     }
+
+    function transferOwner(address _addr) public {
+        if(map_products[_addr].owner == msg.sender && map_products[_addr].mintable && map_products[_addr].requested != 0x0000000000000000000000000000000000000000){
+            map_products[_addr].owner = map_products[_addr].requested;
+            map_products[_addr].noOFTimeSold += 1;
+            map_products[_addr].requested = 0x0000000000000000000000000000000000000000;
+            address tmp = map_customer[map_products[_addr].owner].products[0x0000000000000000000000000000000000000000];
+            do {
+                if(tmp == 0x0000000000000000000000000000000000000000){
+                    map_customer[map_products[_addr].owner].products[tmp] = _addr;
+                    break;
+                }
+                tmp = map_customer[map_products[_addr].owner].products[tmp];
+            }while(true);
+            map_customer[map_products[_addr].owner].nop++;
+        }
+    }
     
+    function clearRequest(address _addr)public{
+        if(map_products[_addr].owner == msg.sender && map_products[_addr].requested != 0x0000000000000000000000000000000000000000){
+            map_products[_addr].requested = 0x0000000000000000000000000000000000000000;
+        }
+    }
     
     /* Customer stuff */
     struct Customer {
@@ -182,7 +205,7 @@ contract OwnerShip {
         mapping(address => address) products;
     }
 
-    mapping(address => Customer) map_customer;
+    mapping(address => Customer) public map_customer;
 
     function createCustomer(string memory _name)public{
         if(!map_employee[msg.sender].opened && !map_company[map_getCompanyName[msg.sender]].opened && !map_customer[msg.sender].opened){
@@ -221,5 +244,14 @@ contract OwnerShip {
         return tmp;
     }
 
+    function requestForTransfer(address _addr) public {
+        if(map_customer[msg.sender].opened && map_products[_addr].mintable && map_products[_addr].requested == 0x0000000000000000000000000000000000000000 && msg.sender != map_products[_addr].owner){
+            map_products[_addr].requested = msg.sender;
+        }
+    }
+
+    function getCustomerDetail() public view returns(string memory, bool, uint256) {
+        return (map_customer[msg.sender].name, map_customer[msg.sender].opened, map_customer[msg.sender].nop);
+    }
 
 }

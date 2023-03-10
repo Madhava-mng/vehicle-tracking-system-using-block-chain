@@ -2,7 +2,7 @@ import React from 'react'
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
-import {Card, CardImg, FormControl, FormLabel, ListGroup, ListGroupItem, Col, Row} from 'react-bootstrap';
+import {Card, FormControl, ListGroup, ListGroupItem, Col, Row} from 'react-bootstrap';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
@@ -14,8 +14,7 @@ import {MDBTabs,MDBTabsItem,MDBTabsLink,MDBTabsContent,MDBTabsPane} from 'mdb-re
 import { ABI, ProgramID } from './abi';
 import './Animation.css'
 import back from '../png/back.png';
-import update from '../png/loading.png'
-import CardHeader from 'react-bootstrap/esm/CardHeader';
+
 
 function Company() {
 
