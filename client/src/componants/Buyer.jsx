@@ -59,14 +59,22 @@ function Company() {
   //   },4000);
   // }, [tmp])
   async function getDetails(){
-    let _details = await contract.methods.getAllMyproducts().call({from:account});
     const cus = await contract.methods.getCustomerDetail().call({from:account});
-    const minted = await contract.methods.getAllMintedProducts().call({from:account});
-    console.log(_details);
     console.log(cus);
     setDetails(cus);
-    setProductDetails(_details);
-    setMintedProduct(minted);
+    try{
+      let _details = await contract.methods.getAllMyproducts().call({from:account});
+      console.log(_details);
+      setProductDetails(_details);
+    }catch(e){
+      console.log(" - Error ");
+    }
+    try{
+      const minted = await contract.methods.getAllMintedProducts().call({from:account});
+      setMintedProduct(minted);
+    }catch(e){
+      
+    }
     //console.log(minted);
   }
 
