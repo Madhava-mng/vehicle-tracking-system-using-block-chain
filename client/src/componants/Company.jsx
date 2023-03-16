@@ -12,9 +12,11 @@ import { useEffect } from 'react';
 import Web3 from 'web3';
 import {MDBTabs,MDBTabsItem,MDBTabsLink,MDBTabsContent,MDBTabsPane} from 'mdb-react-ui-kit';
 import { ABI, ProgramID } from './abi';
-import './Animation.css'
 import back from '../png/back.png';
-
+import verified from '../png/verified.png'
+import { Alert } from '@mui/material'
+import  ProgressBar  from './ProgressBar';
+import update from '../png/update.png'
 
 function Company() {
 
@@ -37,6 +39,7 @@ function Company() {
   const [employeeDetails, setEmployeeDetails] = useState([]);
 
   const [balance, setBalance] = useState(0);
+  const [altErr, setAltErr] = useState(<></>);
 
   const [showOnly, setShowOnly] = useState("All");
   const [sortBy, setSortBy] = useState("Id");
@@ -50,7 +53,7 @@ function Company() {
     setEmployeeDetails(data_);
     setDefaultEmployeeDetail(data_);
     console.log(data_)
-    setTimeout(() => {setLoading(false)}, 4000);
+    setTimeout(() => {setLoading(false)}, 4300);
     // setLoading(false);
   }
   useEffect(() => {
@@ -89,11 +92,16 @@ function Company() {
     setTimeout(async () => {
       await connectWallet();
       setTmp(!tmp);
-    },10000);
+    },1000);
   }, [tmp])
+
+  // useEffect(() => {
+  //   setTimeout(() => {setAltErr(<></>)}, 4000)
+  // }, [altErr])
 
   async function createCompany(){
     let data_ = await contract.methods.newCompany(companyName).send({from: account});
+    setAltErr(<Alert show={true}  className='m-3' severity="success" onClose={() => {handleIconsClick('tab2');setAltErr(<></>)}}>Company created. Add some Employee</Alert>)
     await abc();
     console.log(data_);
   }
@@ -101,15 +109,25 @@ function Company() {
   // add Employee
   
   async function addEmployee(){
-    let data = await contract.methods.addEmployee(empName, empAddr).send({from: account})
+    try{
+      let data = await contract.methods.addEmployee(empName, empAddr).send({from: account})
+      setAltErr(<Alert show={true}  className='m-3' severity="info" onClose={() => {setAltErr(<></>)}}>Operation done</Alert>)
+      console.log(data);
+    }catch(e){
+      setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>Invalid Address</Alert>)
+    }
     await abc()
-    console.log(data);
   }
 
   async function taggleEmpStatus(addr){
-    let data = await contract.methods.taggleInside(addr).send({from: account});
+    try{
+      let data = await contract.methods.taggleInside(addr).send({from: account});
+      setAltErr(<Alert show={true}  className='m-3' severity="success" onClose={() => {setAltErr(<></>)}}>Operation Successfully</Alert>)
+      console.log(data);
+    }catch(e){
+      setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>Error while running this process</Alert>)
+    }
     await abc()
-    console.log(data);
   }
 
   function handleIconsClick(value) {
@@ -127,21 +145,22 @@ function Company() {
       setBalance((bal/1000000000000000000).toFixed(4));
       setAccount(accounts[0]);
       setIsWallet(!isWallet);
-  }
+    }
 
- 
-
-  useEffect(() => {connectWallet()}, [])
-
-  return (
-    <div>
+  
+    
+    
+    useEffect(() => {connectWallet()}, [])
+    
+    return (
+      <div>
+      {(loading)? <ProgressBar color='primary'/>:<></>}
       {/* <Chart /> */}
-     
       {['sm'].map((expand) => (
-        <Navbar key={expand} bg="dark"  expand={expand} className="mb-3">
+        <Navbar key={expand} bg="dark"  expand={expand} className="mb-3 bg-opacity-10"  >
           <Container fluid>
             <Navbar.Brand href="/" style={{"color":"white"}}>Vehicle Tracking</Navbar.Brand>
-            {(loading)? <div class="spinner-border text-info spinner-border-md" role="status"><span class="sr-only"></span></div>:<></>}
+          <img src={update} style={{maxBlockSize:'20px'}} onClick={()=> {connectWallet();abc() }}></img>
             <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} />
             <Navbar.Offcanvas
               id={`offcanvasNavbar-expand-${expand}`}
@@ -157,7 +176,6 @@ function Company() {
                 <Nav className="justify-content-end flex-grow-1 pe-3">
                   <Link className='btn btn-outline-info ms-2' to="/seller"><img src={back} style={{maxBlockSize:'19px'}}/> Back</Link>
                   {/* <Link className='btn btn-outline-info ms-2' to="/employee">Employee &gt;</Link> */}
-                 
                 </Nav>
                 <Form className="d-flex">
                 </Form>
@@ -167,6 +185,7 @@ function Company() {
           </Container>
         </Navbar>
       ))}
+      
 
       <Card className={`m-5 pd-${hover}`} onMouseLeave={()=>{setHovering( 1 )}} onMouseEnter={()=>{setHovering( 0 )}}>
         <Card.Header className='bg-dark' style={{color:"white"}}>
@@ -188,25 +207,29 @@ function Company() {
               </MDBTabsItem>
               <MDBTabsItem>
                 <MDBTabsLink onClick={() => handleIconsClick('tab3')} active={iconsActive === 'tab3'}>
-                  Settings
+                  Settings {details[0] == '' ? <span className='badge bg-danger'>1</span>:<></>}
                 </MDBTabsLink>
               </MDBTabsItem>
             </MDBTabs>
+            {altErr}
+            {(details[0] =='')? <Alert show={true}  className='m-3' severity="error" onClose={() => {handleIconsClick('tab3')}}>You don't have company yet.</Alert>:<></>}  
 
             <MDBTabsContent style={{background:""}} className='rounded' >
               <MDBTabsPane show={iconsActive === 'tab1'} style={{textAlign:'left',background:''}} className='m-0 p-2 rounded' >
-                <Card className='mb-2' >
+                <Card className='mb-2 bg-opacity-10 ' >
                   <Card.Header style={{background:"#deb887"}}>
                     <h5>Owner: {account}</h5>
                   </Card.Header>
                   <Card.Body style={{background:"#FFF8E1"}}>
+                    {details[0] != ''?
                   <ListGroup variant="flush" >
-                      <ListGroup.Item style={{background:"#FFF8E1"}}>Name: {details[0]}</ListGroup.Item>
+                      <ListGroup.Item style={{background:"#FFF8E1"}}>Name: {details[0]} {(details[2] > 0)? <img src={verified} style={{maxBlockSize:'25px'}}/>:<></>}</ListGroup.Item>
                       <ListGroup.Item style={{background:"#FFF8E1"}}>No Of Employee: {(details[2] == 0)? <span className="badge bg-warning">Nil</span>:details[2]}</ListGroup.Item>
                       <ListGroup.Item style={{background:"#FFF8E1"}}>No Of Products: {(details[3] == 0)? <span className="badge bg-warning">Nil</span>:details[3]}</ListGroup.Item>
                       <ListGroup.Item style={{background:"#FFF8E1"}}>Company Status: {(details[4])?  <span className="badge bg-success">Open</span>:<span className="badge bg-danger">Close</span>}</ListGroup.Item>
                       <ListGroup.Item style={{background:"#FFF8E1"}}></ListGroup.Item>
                   </ListGroup>
+                  :<></>}
                   </Card.Body>
                   <Card.Footer style={{background:"#deb887"}}>
                   </Card.Footer>
@@ -230,9 +253,9 @@ function Company() {
                           <Nav className="justify-content-end flex-grow-1 pe-3">
                             
                           </Nav>
-                          <div class="input-group">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text ms-2" id="">Show</span>
+                          <div className="input-group">
+                    <div className="input-group-prepend">
+                      <span className="input-group-text ms-2" id="">Show</span>
                     </div>
                     <select onClick={(e)=> {setShowOnly( e.target.value)}} className="form-control form-select" style={{maxWidth: '120px', marginLeft:'-5px'}}>
                       <option className="form-control rounded" selected>All</option>
@@ -240,9 +263,9 @@ function Company() {
                       <option className="form-control rounded">Access</option>
                     </select>
                   </div>
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text ms-2" id="">Sort By</span>
+                  <div className="input-group">
+                    <div className="input-group-prepend">
+                      <span className="input-group-text ms-2" id="">Sort By</span>
                     </div>
                     <select onClick={(e)=> {setSortBy( e.target.value)}} className="form-control form-select" style={{maxWidth: '120px', marginLeft:'-5px'}}>
                       <option className="form-control rounded" selected>Default</option>
@@ -250,9 +273,9 @@ function Company() {
                       <option className="form-control rounded">Count</option>
                     </select>
                   </div>
-                  <div class="input-group">
-                      <div class="input-group-prepend">
-                        <span class="input-group-text ms-2" id="">View</span>
+                  <div className="input-group">
+                      <div className="input-group-prepend">
+                        <span className="input-group-text ms-2" id="">View</span>
                       </div>
                       <Button className='btn-secondary' onClick={() => {let tmp = employeeDetails.slice().reverse(); setEmployeeDetails(tmp)}}>Inverte</Button>
                     </div>
@@ -273,7 +296,7 @@ function Company() {
                       <Col>
                     <Card  key={`${emp.owner}`} className='mb-2' id='card-bodys'>
                         <Card.Header style={{background:"#f6eabe"}}>
-                        {emp.owner} {(emp.inside)? <span className="badge bg-success">Access</span>:<span className="badge bg-danger">Kicked</span>}  {(loading)? <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>:<></>}
+                        {emp.owner} {(emp.inside)? <span className="badge bg-success">Access</span>:<span className="badge bg-danger">Kicked</span>}  {(loading)? <span className="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>:<></>}
                         </Card.Header>
                         <Card.Body style={{background:"#FFF8E1"}}>
                         <ListGroup variant="flush" >

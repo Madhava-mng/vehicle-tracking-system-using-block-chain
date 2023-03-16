@@ -12,7 +12,10 @@ import { useEffect } from 'react';
 import Web3 from 'web3';
 import {MDBTabs,MDBTabsItem,MDBTabsLink,MDBTabsContent,MDBTabsPane} from 'mdb-react-ui-kit';
 import { ABI, ProgramID } from './abi';
-import back from '../png/back.png'
+import back from '../png/back.png';
+import { Alert } from '@mui/material'
+import  ProgressBar  from './ProgressBar';
+import update from '../png/update.png'
 
 
 
@@ -21,9 +24,10 @@ function Company() {
   const [hover, setHovering] = useState(4);
   const [iconsActive, setIconsActive] = useState('tab1');
   const [account, setAccount] = useState("");
-  const web3 = new Web3(Web3.givenProvider || 'http://172.17.0.1:8545');
+  const web3 = new Web3( Web3.givenProvider || 'http://172.17.0.1:8545');
   const contract = new web3.eth.Contract(ABI,ProgramID);
   const [tmp, setTmp] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   const [details, setDetails] = useState([]);
   const [productDetails, setProductDetails] = useState([]);
@@ -32,6 +36,7 @@ function Company() {
   const [vUid, setVUid] = useState("");
   const [vType, setVType] = useState("");
   const [vPrice, setVPrice] = useState("");
+  const [altErr, setAltErr] = useState(<Alert show={true}  className='m-3' severity="info" onClose={() => {setAltErr(<></>)}}>Welcome {details[0]}</Alert>);
 
   const [balance, setBalance] = useState(0);
 
@@ -44,29 +49,19 @@ function Company() {
     setIconsActive(value);
   }
 
-  async function connectWallet(){
-    const accounts = await web3.eth.requestAccounts();
-    const network_type = await web3.eth.net.getNetworkType();
-    const bal = await web3.eth.getBalance(accounts[0]);
-    setBalance((bal/1000000000000000000).toFixed(4));
-    setAccount(accounts[0]);
-    getDetails();
-  }
-  useEffect(() => {
-    setTimeout(async () => {
-      await connectWallet();
-      setTmp(!tmp);
-    },4000);
-  }, [tmp])
   async function getDetails(){
+    setLoading(true);
     let _details = await contract.methods.getProductDetails().call({from:account});
     const _emp = await contract.methods.getEmployeeDetail().call({from:account});
     console.log(_details);
     console.log(_emp);
     setDetails(_emp);
     setProductDetails(_details);
+    setTimeout(() => {setLoading(false)}, 3300);
   }
 
+  
+  
   async function newProduct(){
     let _newProduct = await contract.methods.newProduct(
       vName,
@@ -74,47 +69,73 @@ function Company() {
       vType,
       vPrice
     ).send({from: account});
-    console.log()
+    setAltErr(<Alert show={true}  className='m-3' severity="success" onClose={() => {setAltErr(<></>)}}>New Product added</Alert>)
+    console.log(_newProduct);
     getDetails();
   }
-
-  useEffect(() => {
-    connectWallet();
-  }, [account])
-
+  
   useEffect(() => {
     setIsAddBtn((vName.length > 1 && vPrice > 0 && vType.length > 1 && vUid.length > 2 && details[3] && details[4])? false: true);
   }, [vName,vPrice, vType, vUid])
-
+  
   async function taggleMintable(_addr){
     let data = await contract.methods.taggleMintable(_addr).send({from: account});
+    setAltErr(<Alert show={true}  className='m-3' severity="success" onClose={() => {setAltErr(<></>)}}>Updated</Alert>)
     getDetails();
     console.log(data);
   }
 
   async function transferOwner(_addr){
     let data = await contract.methods.transferOwner(_addr).send({from: account});
+    setAltErr(<Alert show={true}  className='m-3' severity="warning" onClose={() => {setAltErr(<></>)}}>Transfered</Alert>)
     getDetails();
     console.log(data);
   }
   async function clearRequest(_addr){
     let data = await contract.methods.clearRequest(_addr).send({from: account});
+    setAltErr(<Alert show={true}  className='m-3' severity="success" onClose={() => {setAltErr(<></>)}}>Cleared</Alert>)
     getDetails();
     console.log(data);
   }
 
+  
+  useEffect(() => {
+    connectWallet();
+  }, [])
+  useEffect(() => {
+    getDetails();
+  }, [account])
+  async function connectWallet(){
+    const accounts = await web3.eth.requestAccounts();
+    const network_type = await web3.eth.net.getNetworkType();
+    const bal = await web3.eth.getBalance(accounts[0]);
+    setBalance((bal/1000000000000000000).toFixed(4));
+    setAccount(accounts[0]);
+    
+  }
+  useEffect(() => {
+    let I =  setTimeout(async () => {
+      connectWallet();
+        setTmp(!tmp);
+      },5000);
+    return() => {
+      clearInterval(I)
+    }
+  }, [tmp])
   return (
     <div>
+      {(loading)? <ProgressBar color='secondary'/>:<></>}
       {[  'sm'].map((expand) => (
         <Navbar key={expand} bg="dark"  expand={expand} className="mb-3">
           <Container fluid>
             <Navbar.Brand href="/" style={{"color":"white"}}>Vehicle Tracking</Navbar.Brand>
+            <img src={update} style={{maxBlockSize:'20px'}} onClick={()=> {connectWallet();getDetails() }}></img>
             <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} />
             <Navbar.Offcanvas
               id={`offcanvasNavbar-expand-${expand}`}
               aria-labelledby={`offcanvasNavbarLabel-expand-${expand}`}
               placement="end"
-            >
+              >
               <Offcanvas.Header closeButton>
                 <Offcanvas.Title id={`offcanvasNavbarLabel-expand-${expand}`} style={{"color":"white"}}>
                   Bike Tracking
@@ -138,7 +159,7 @@ function Company() {
 
       <Card className={`m-5 pd-${hover}`} onMouseLeave={()=>{setHovering( 1 )}} onMouseEnter={()=>{setHovering( 0 )}}>
         <Card.Header className='bg-dark' style={{color:"white"}}>
-          <Card.Title >Employee {(details[3])? <span className="badge bg-success">✓</span>:<span className="badge bg-danger">✗</span>}</Card.Title>
+          <Card.Title >{(details[3])? <span className="badge bg-success">Verified Employee ✓</span>:<span className="badge bg-danger">✗ You are not belongs to any Company</span>}</Card.Title>
         </Card.Header>
         <Card.Body className='p-1 m-5 ms-5'>
           <div className=''>
@@ -156,17 +177,20 @@ function Company() {
             </MDBTabs>
 
             <MDBTabsContent >
+          {altErr}
               <MDBTabsPane show={iconsActive === 'tab1'} style={{textAlign:'left'}} className='m-0 p-2 rounded' >
                 <Card className='mb-2' >
                   <Card.Header style={{background:"#CE93D8"}}>
                     <h5>Owner: {account} {(details[4])? <span className="badge bg-success">Active</span>:<span className="badge bg-danger">Not Active</span>}</h5>
                   </Card.Header>
                   <Card.Body style={{background:"#F3E5F5"}}>
+                    {(details[0])?
                     <ListGroup variant="flush">
                       <ListGroup.Item style={{background:"#F3E5F5"}}>Name: {details[0]}</ListGroup.Item>
                       <ListGroup.Item style={{background:"#F3E5F5"}}>Company: {details[2]}</ListGroup.Item>
                       <ListGroup.Item style={{background:"#F3E5F5"}}>No Of Products: {(details[5] == 0)? <span className="badge bg-warning">Nil</span>:details[5]}</ListGroup.Item>
-                    </ListGroup>
+                    </ListGroup>:<></>
+                    }
                   </Card.Body>
                 </Card>
 

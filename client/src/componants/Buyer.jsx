@@ -2,7 +2,7 @@ import React from 'react'
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
-import {Card, FormControl, ListGroup, ListGroupItem, Row, Col} from 'react-bootstrap';
+import {Card, FormControl, ListGroup, ListGroupItem, Row, Col, InputGroup} from 'react-bootstrap';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
@@ -13,6 +13,11 @@ import Web3 from 'web3';
 import {MDBTabs,MDBTabsItem,MDBTabsLink,MDBTabsContent,MDBTabsPane} from 'mdb-react-ui-kit';
 import { ABI, ProgramID } from './abi';
 import back from '../png/back.png'
+import verified from '../png/verified.png'
+import Box from '@mui/material/Box';
+import { DataGrid } from '@mui/x-data-grid';
+import  ProgressBar  from './ProgressBar';
+import update from '../png/update.png'
 
 
 
@@ -21,11 +26,12 @@ function Company() {
   const [hover, setHovering] = useState(4);
   const [iconsActive, setIconsActive] = useState('tab1');
   const [account, setAccount] = useState("");
-  const web3 = new Web3(Web3.givenProvider || 'http://172.17.0.1:8545');
+  const web3 = new Web3( Web3.givenProvider || 'http://172.17.0.1:8545');
   const contract = new web3.eth.Contract(ABI,ProgramID);
   const [tmp, setTmp] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [details, setDetails] = useState([]);
+  const [details, setDetails] = useState(['']);
   const [productDetails, setProductDetails] = useState([]);
 
   const [cName, setCName] = useState("Name");
@@ -50,15 +56,18 @@ function Company() {
     const bal = await web3.eth.getBalance(accounts[0]);
     setBalance((bal/1000000000000000000).toFixed(4));
     setAccount(accounts[0]);
-    getDetails();
   }
-  // useEffect(() => {
-  //   setTimeout(async () => {
-  //     connectWallet();
-  //     setTmp(!tmp);
-  //   },4000);
-  // }, [tmp])
+  useEffect(() => {
+    setTimeout(async () => {
+      connectWallet();
+      setTmp(!tmp);
+    },4000);
+  }, [tmp])
+  async function serilize(data){
+      setProductDetails(data);
+  }
   async function getDetails(){
+    setLoading(true);
     const cus = await contract.methods.getCustomerDetail().call({from:account});
     console.log(cus);
     setDetails(cus);
@@ -75,6 +84,7 @@ function Company() {
     }catch(e){
       
     }
+    setTimeout(() => {setLoading(false)}, 4300);
     //console.log(minted);
   }
 
@@ -88,6 +98,10 @@ function Company() {
 
   useEffect(() => {
     connectWallet();
+  }, [])
+
+  useEffect(() => {
+    getDetails();
   }, [account])
 
   useEffect(() => {
@@ -115,13 +129,70 @@ function Company() {
     let data = await contract.methods.requestForTransfer(_addr).send({from: account});
     getDetails();
   }
-
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 90 },
+    {
+      field: 'name',
+      headerName: 'Vehicle Name',
+      width: 150,
+      editable: false,
+    },
+    {
+      field: 'uniqNumber',
+      headerName: 'Vehicle Id',
+      width: 150,
+      editable: false,
+    },
+    {
+      field: 'owner',
+      headerName: 'Current Owner',
+      width: 110,
+    },
+    {
+      field: 'type_',
+      headerName: 'Type',
+      width: 110,
+    },
+    {
+      field: 'price',
+      headerName: 'Price',
+      width: 110,
+    },
+    {
+      field: 'noOFTimeSold',
+      headerName: 'Number of Time Sold',
+      width: 110,
+    },
+    {
+      field: 'creator',
+      headerName: 'Creator',
+      width: 110,
+    },
+    {
+      field: 'date',
+      headerName: 'When Created',
+      width: 110,
+    },
+    
+    // {
+    //   field: 'fullName',
+    //   headerName: 'Full name',
+    //   description: 'This column has a value getter and is not sortable.',
+    //   sortable: false,
+    //   width: 160,
+    //   valueGetter: (params) =>
+    //     `${params.row.firstName || ''} ${params.row.lastName || ''}`,
+    // },
+  ];
+  
   return (
     <div>
+       {(loading)? <ProgressBar color='primary'/>:<></>}
       {[  'sm'].map((expand) => (
         <Navbar key={expand} bg="dark"  expand={expand} className="mb-3">
           <Container fluid>
             <Navbar.Brand href="/" style={{"color":"white"}}>Vehicle Tracking</Navbar.Brand>
+            <img src={update} style={{maxBlockSize:'20px'}} onClick={()=> {connectWallet();getDetails() }}></img>
             <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} />
             <Navbar.Offcanvas
               id={`offcanvasNavbar-expand-${expand}`}
@@ -151,7 +222,7 @@ function Company() {
 
       <Card className={`m-5 pd-${hover}`} onMouseLeave={()=>{setHovering( 1 )}} onMouseEnter={()=>{setHovering( 0 )}}>
         <Card.Header className='bg-dark' style={{color:"white"}}>
-          <Card.Title >Hello, {details[0]} {(details[1])? <span className="badge bg-success">✓</span>:<span className="badge bg-danger">✗</span>}</Card.Title>
+          <Card.Title >{(details[1])? <span className="badge bg-success">Verified User ✓</span>:<span className="badge bg-danger" onClick={() => handleIconsClick('tab3')} active={iconsActive === 'tab3'}>✗ Please Create an account</span>}</Card.Title>
         </Card.Header>
         <Card.Body className='p-1 m-5 ms-5'>
           <div className=''>
@@ -168,7 +239,7 @@ function Company() {
               </MDBTabsItem>
               <MDBTabsItem>
                 <MDBTabsLink onClick={() => handleIconsClick('tab3')} active={iconsActive === 'tab3'}>
-                   Settings
+                   Settings {(details[1])? <></>:<span className='badge bg-danger'>1</span>}
                 </MDBTabsLink>
               </MDBTabsItem>
             </MDBTabs>
@@ -181,7 +252,7 @@ function Company() {
                   </Card.Header>
                   <Card.Body style={{background:"#c9ffe5"}}>
                     <ListGroup variant="flush">
-                      <ListGroup.Item style={{background:"#c9ffe5"}}>Name: {details[0]}</ListGroup.Item>
+                      <ListGroup.Item style={{background:"#c9ffe5"}}>Name: {details[0]}{(details[1])? <img src={verified} style={{maxBlockSize:'25px'}}/>:<></>}</ListGroup.Item>
                       <ListGroup.Item style={{background:"#c9ffe5"}}>No Of Products: {(details[2] == 0)? <span className="badge bg-warning">Nil</span>:details[2]}</ListGroup.Item>
                     </ListGroup>
                   </Card.Body>
@@ -233,7 +304,25 @@ function Company() {
                   <Card.Header style={{background:"#48d1cc"}}>
                     Explore Products
                   </Card.Header>
-                  <Card.Body style={{background:"#c9ffe5"}}>
+                  <Card.Body className=''>
+
+                  <Box sx={{ height: 400, width: '100%' }}>
+                    <DataGrid
+                      rows={mintedProduct}
+                      columns={columns}
+                      initialState={{
+                        pagination: {
+                          paginationModel: {
+                            pageSize: 5,
+                          },
+                        },
+                      }}
+                      pageSizeOptions={[5]}
+                      checkboxSelection
+                      disableRowSelectionOnClick
+                    />
+                  </Box>  
+
                   </Card.Body>
                   <Card.Footer style={{background:"#48d1cc"}}>
                     <Button className='ms-2' onClick={()=> {}} disabled={isAddBtn}>Search</Button>
@@ -241,8 +330,10 @@ function Company() {
                 </Card>
                 <Row xs={1} md={3} className="g-2">
                 {mintedProduct.map((pro) => {
-                  return (
-                    <Col>
+                  if(pro.owner !=  '0x0000000000000000000000000000000000000000'){
+
+                    return (
+                      <Col>
                       <Card className='mb-3'>
                         <Card.Header style={{background:"#48d1cc"}}>
                           # {pro.id} {(pro.owner == pro.creator)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-success">Sold</span>}
@@ -267,6 +358,7 @@ function Company() {
                       </Card>
                     </Col>
                     )
+                  }
                   })}
                   </Row>
               </MDBTabsPane>
@@ -276,11 +368,17 @@ function Company() {
                     Settings
                   </Card.Header>
                   <Card.Body style={{background:"#c9ffe5"}}>
-                    <FormControl className='m-2' onChange={(e) => {setCName(e.target.value)}} placeholder={cName}></FormControl>
-                    <FormControl className='m-2' placeholder='Mail'></FormControl>
+                    <InputGroup className="mb-3">
+                    <InputGroup.Text id="basic-addon1" style={{background:"#48d1cc"}}>Name</InputGroup.Text>
+                    <FormControl className='' onChange={(e) => {setCName(e.target.value)}} placeholder={details[0]}></FormControl>
+                    </InputGroup>
+                    <InputGroup className="mb-3">
+                    <InputGroup.Text id="basic-addon1" style={{background:"#48d1cc"}}>Mail</InputGroup.Text>
+                    <FormControl className='' placeholder='Mail'></FormControl>
+                    </InputGroup>
                   </Card.Body>
                   <Card.Footer style={{background:"#48d1cc"}}>
-                    <Button className='ms-2' onClick={()=> {newCustomer()}} disabled={isAddBtn}>Create Account</Button>
+                    <Button className='ms-2' onClick={()=> {newCustomer()}} disabled={details[0].length}>Create Account</Button>
                   </Card.Footer>
                 </Card>
               </MDBTabsPane>

@@ -11,6 +11,7 @@ import Seller from './componants/Seller';
 import Company from './componants/Company';
 import Employee from './componants/Employee';
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import background from '../src/jpg/backgroung.jpg'
 
 function App() {
   // const [account, setAccount] = useState([]);
@@ -29,6 +30,7 @@ function App() {
   //   loadAccount();
   // }, [account,balance,network])
   return (
+    <div  className='' style={{ backgroundImage: `url(${background})` , height:'200vh',backgroundSize: 'cover', backgroundRepeat: 'no-repeat',}}>
     <div className="App">
       <BrowserRouter>
         <Routes>
@@ -40,6 +42,7 @@ function App() {
           <Route path='/employee' element={<Employee/>} />
         </Routes>
       </BrowserRouter>
+    </div>
     </div>
   );
 }
