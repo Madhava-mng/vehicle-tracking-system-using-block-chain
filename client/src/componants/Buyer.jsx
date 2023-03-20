@@ -265,7 +265,7 @@ function Company() {
                     <Col>
                       <Card className='mb-3'>
                         <Card.Header style={{background:"#48d1cc"}}>
-                          # {pro.id} {(pro.owner == account)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-success">Sold</span>}
+                          # {pro.id} {(pro.owner == account)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-success">Owned</span>}
                         </Card.Header>
                         <Card.Body style={{background:"#c9ffe5"}}>
                         <ListGroup variant="flush"  >
@@ -330,13 +330,13 @@ function Company() {
                 </Card>
                 <Row xs={1} md={3} className="g-2">
                 {mintedProduct.map((pro) => {
-                  if(pro.owner !=  '0x0000000000000000000000000000000000000000'){
+                  if(pro.owner !=  account){
 
                     return (
                       <Col>
                       <Card className='mb-3'>
                         <Card.Header style={{background:"#48d1cc"}}>
-                          # {pro.id} {(pro.owner == pro.creator)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-success">Sold</span>}
+                          # {pro.id} {(pro.owner != account)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-success">Owned</span>}
                         </Card.Header>
                         <Card.Body style={{background:"#c9ffe5"}}>
                         <ListGroup variant="flush"  >

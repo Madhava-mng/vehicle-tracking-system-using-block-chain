@@ -79,23 +79,35 @@ function Company() {
   }, [vName,vPrice, vType, vUid])
   
   async function taggleMintable(_addr){
-    let data = await contract.methods.taggleMintable(_addr).send({from: account});
-    setAltErr(<Alert show={true}  className='m-3' severity="success" onClose={() => {setAltErr(<></>)}}>Updated</Alert>)
+    try{
+      let data = await contract.methods.taggleMintable(_addr).send({from: account});
+      setAltErr(<Alert show={true}  className='m-3' severity="success" onClose={() => {setAltErr(<></>)}}>Updated</Alert>)
+      console.log(data);
+    }catch(e){
+      setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>{e.message}</Alert>)
+    }
     getDetails();
-    console.log(data);
   }
 
   async function transferOwner(_addr){
-    let data = await contract.methods.transferOwner(_addr).send({from: account});
-    setAltErr(<Alert show={true}  className='m-3' severity="warning" onClose={() => {setAltErr(<></>)}}>Transfered</Alert>)
+    try{
+      let data = await contract.methods.transferOwner(_addr).send({from: account});
+      setAltErr(<Alert show={true}  className='m-3' severity="warning" onClose={() => {setAltErr(<></>)}}>Transfered</Alert>)
+      console.log(data);
+    }catch(e){
+      setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>{e.message}</Alert>)
+    }
     getDetails();
-    console.log(data);
   }
   async function clearRequest(_addr){
-    let data = await contract.methods.clearRequest(_addr).send({from: account});
-    setAltErr(<Alert show={true}  className='m-3' severity="success" onClose={() => {setAltErr(<></>)}}>Cleared</Alert>)
+    try{
+      let data = await contract.methods.clearRequest(_addr).send({from: account});
+      setAltErr(<Alert show={true}  className='m-3' severity="success" onClose={() => {setAltErr(<></>)}}>Cleared</Alert>)
+      console.log(data);
+    }catch(e){
+      setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>{e.message}</Alert>)
+    }
     getDetails();
-    console.log(data);
   }
 
   

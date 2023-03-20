@@ -17,6 +17,8 @@ import verified from '../png/verified.png'
 import { Alert } from '@mui/material'
 import  ProgressBar  from './ProgressBar';
 import update from '../png/update.png'
+import { GridPrintExportMenuItem } from '@mui/x-data-grid';
+import { yellow } from '@mui/material/colors';
 
 function Company() {
 
@@ -110,11 +112,16 @@ function Company() {
   
   async function addEmployee(){
     try{
-      let data = await contract.methods.addEmployee(empName, empAddr).send({from: account})
-      setAltErr(<Alert show={true}  className='m-3' severity="info" onClose={() => {setAltErr(<></>)}}>Operation done</Alert>)
-      console.log(data);
+      let addr = await contract.methods.map_employee(empAddr).call();
+      if(addr.inside == false){
+        let data = await contract.methods.addEmployee(empName, empAddr).send({from: account})
+        setAltErr(<Alert show={true}  className='m-3' severity="info" onClose={() => {setAltErr(<></>)}}>Operation done</Alert>)
+        console.log(data);
+      }else{
+        setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>This Employee already Exiest</Alert>)
+      }
     }catch(e){
-      setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>Invalid Address</Alert>)
+      setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>{e.message}</Alert>)
     }
     await abc()
   }
@@ -125,7 +132,7 @@ function Company() {
       setAltErr(<Alert show={true}  className='m-3' severity="success" onClose={() => {setAltErr(<></>)}}>Operation Successfully</Alert>)
       console.log(data);
     }catch(e){
-      setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>Error while running this process</Alert>)
+      setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>{e.message}</Alert>)
     }
     await abc()
   }
