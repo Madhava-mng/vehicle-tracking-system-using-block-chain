@@ -39,7 +39,6 @@ contract OwnerShip {
             noc++;
             return true;
         }
-        // revert(map_company[_name] == 0, "The Name already exiest");
         return false;
     }
 
@@ -123,7 +122,7 @@ contract OwnerShip {
         Employee memory emp = map_employee[msg.sender];
         if(emp.opened && emp.inside){
             address pid = genRandAddr();
-            Product memory pdt = Product(pid, _uniq, _name, _type,0, _price, emp.owner,emp.owner, 0x0000000000000000000000000000000000000000,false, block.timestamp);
+            Product memory pdt = Product(pid, _uniq, _name, _type,0, _price, emp.owner,emp.owner, address(0),false, block.timestamp);
             map_products[pid] = pdt;
             emp.product_count += 1;
             map_employee[msg.sender].products.push(pid);
@@ -145,7 +144,7 @@ contract OwnerShip {
     function taggleMintable(address _addr) public {
 
         if(map_products[_addr].owner == msg.sender){
-            address a = 0x0000000000000000000000000000000000000000;
+            address a = address(0);
             address b;
             if(map_products[_addr].mintable){
                 do{
@@ -156,17 +155,17 @@ contract OwnerShip {
                         break;
                     }
                     a = b;
-                }while(a != 0x0000000000000000000000000000000000000000);
+                }while(a != address(0));
 
                 map_products[_addr].mintable = false;
                 nom--;
             }else{
                 do{
-                    if(map_mintable[a] == 0x0000000000000000000000000000000000000000){
+                    if(map_mintable[a] == address(0)){
                         break;
                     }
                     a = map_mintable[a];
-                }while(a != 0x0000000000000000000000000000000000000000); 
+                }while(a != address(0)); 
                 map_mintable[a] = _addr;
                 map_products[_addr].mintable = true;
                 nom++;
@@ -174,26 +173,30 @@ contract OwnerShip {
         }
     }
 
-    function transferOwner(address _addr) public {
-        if(map_products[_addr].owner == msg.sender && map_products[_addr].mintable && map_products[_addr].requested != 0x0000000000000000000000000000000000000000){
+    function transferOwner(address _addr) public returns (bool) {
+        if(map_products[_addr].owner == msg.sender && map_products[_addr].mintable && map_products[_addr].requested != address(0)){
             map_products[_addr].owner = map_products[_addr].requested;
             map_products[_addr].noOFTimeSold += 1;
-            map_products[_addr].requested = 0x0000000000000000000000000000000000000000;
-            address tmp = map_customer[map_products[_addr].owner].products[0x0000000000000000000000000000000000000000];
+            map_products[_addr].requested = address(0);
+            address tmp = map_customer[map_products[_addr].owner].products[address(0)];
             do {
-                if(tmp == 0x0000000000000000000000000000000000000000){
+                if(map_customer[map_products[_addr].owner].products[tmp] == address(0)){
                     map_customer[map_products[_addr].owner].products[tmp] = _addr;
                     break;
                 }
                 tmp = map_customer[map_products[_addr].owner].products[tmp];
             }while(true);
             map_customer[map_products[_addr].owner].nop++;
+            
+            return true;
         }
+        return false;
     }
     
     function clearRequest(address _addr)public{
-        if(map_products[_addr].owner == msg.sender && map_products[_addr].requested != 0x0000000000000000000000000000000000000000){
-            map_products[_addr].requested = 0x0000000000000000000000000000000000000000;
+        if(map_products[_addr].owner == msg.sender){
+        // if(map_products[_addr].owner == msg.sender && map_products[_addr].requested != address(0)){
+            map_products[_addr].requested = address(0);
         }
     }
     
@@ -218,13 +221,13 @@ contract OwnerShip {
         Product[] memory tmp = new Product[](map_customer[msg.sender].nop);
         uint256 i;
         if(map_customer[msg.sender].opened){
-            address a = 0x0000000000000000000000000000000000000000;
+            address a = address(0);
             do {
                 a = map_customer[msg.sender].products[a];
-                if(a != 0x0000000000000000000000000000000000000000){
+                if(a != address(0)){
                     tmp[i++] = map_products[a];
                 }
-            }while(a != 0x0000000000000000000000000000000000000000);
+            }while(a != address(0));
         }
         return tmp;
     }
@@ -232,20 +235,21 @@ contract OwnerShip {
     function getAllMintedProducts() public view returns(Product[] memory){
         Product[] memory tmp = new Product[](nom);
         uint256 i;
+        
         if(map_employee[msg.sender].opened || map_company[map_getCompanyName[msg.sender]].opened || map_customer[msg.sender].opened){
-            address a = 0x0000000000000000000000000000000000000000;
+            address a = address(0);
             do {
                 a = map_mintable[a];
-                if(a != 0x0000000000000000000000000000000000000000){
+                if(a != address(0)){
                     tmp[i++] = map_products[a];
                 }
-            }while(a != 0x0000000000000000000000000000000000000000);
+            }while(a != address(0));
         }
         return tmp;
     }
 
     function requestForTransfer(address _addr) public {
-        if(map_customer[msg.sender].opened && map_products[_addr].mintable && map_products[_addr].requested == 0x0000000000000000000000000000000000000000 && msg.sender != map_products[_addr].owner){
+        if(map_customer[msg.sender].opened && map_products[_addr].mintable && map_products[_addr].requested == address(0) && msg.sender != map_products[_addr].owner){
             map_products[_addr].requested = msg.sender;
         }
     }
