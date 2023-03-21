@@ -102,7 +102,6 @@ contract OwnerShip {
     // add new product        +product
     struct Product {
         address id;
-        string uniqNumber;
         string name;
         string type_;
         uint256 noOFTimeSold;
@@ -111,18 +110,20 @@ contract OwnerShip {
         address creator;
         address requested;
         bool mintable;
-        uint date;
+        uint[] date;
     }
     mapping(address => Product) public map_products;
     mapping(address => address) public map_mintable;
     uint256 public nom = 0;
     uint256 public nop = 0;
     
-    function newProduct(string memory _name,string memory _uniq,string memory _type, uint256 _price) public returns (bool){
+    function newProduct(string memory _name,string memory _type, uint256 _price) public returns (bool){
         Employee memory emp = map_employee[msg.sender];
         if(emp.opened && emp.inside){
             address pid = genRandAddr();
-            Product memory pdt = Product(pid, _uniq, _name, _type,0, _price, emp.owner,emp.owner, address(0),false, block.timestamp);
+            uint[] memory tmp ;
+            //tmp.push(block.timestamp);
+            Product memory pdt = Product(pid, _name , _type,0, _price, emp.owner,emp.owner, address(0),false, tmp);
             map_products[pid] = pdt;
             emp.product_count += 1;
             map_employee[msg.sender].products.push(pid);
@@ -178,6 +179,7 @@ contract OwnerShip {
             map_products[_addr].owner = map_products[_addr].requested;
             map_products[_addr].noOFTimeSold += 1;
             map_products[_addr].requested = address(0);
+            map_products[_addr].date.push(block.timestamp);
             address tmp = map_customer[map_products[_addr].owner].products[address(0)];
             do {
                 if(map_customer[map_products[_addr].owner].products[tmp] == address(0)){
@@ -235,7 +237,7 @@ contract OwnerShip {
     function getAllMintedProducts() public view returns(Product[] memory){
         Product[] memory tmp = new Product[](nom);
         uint256 i;
-        
+        // if(true){
         if(map_employee[msg.sender].opened || map_company[map_getCompanyName[msg.sender]].opened || map_customer[msg.sender].opened){
             address a = address(0);
             do {

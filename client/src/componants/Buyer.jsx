@@ -1,7 +1,5 @@
 import React from 'react'
 import Button from 'react-bootstrap/Button';
-import Container from 'react-bootstrap/Container';
-import Form from 'react-bootstrap/Form';
 import {Card, FormControl, ListGroup, ListGroupItem, Row, Col, InputGroup} from 'react-bootstrap';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
@@ -16,8 +14,10 @@ import back from '../png/back.png'
 import verified from '../png/verified.png'
 import Box from '@mui/material/Box';
 import { DataGrid } from '@mui/x-data-grid';
-import  ProgressBar  from './ProgressBar';
-import update from '../png/update.png'
+import CustomNav from './CustomNav';
+import { GridRowParams } from '@mui/x-data-grid';
+import {Autocomplete,TextField }from '@mui/material';
+import PopOver from './PopOver';
 
 
 
@@ -42,6 +42,8 @@ function Company() {
   const [isAddBtn, setIsAddBtn] = useState(true);
 
   const [mintedProduct, setMintedProduct] = useState([]);
+
+  const [select , setSelect] = useState([]);
 
   function handleIconsClick(value) {
     if (value === iconsActive) {
@@ -130,101 +132,71 @@ function Company() {
     getDetails();
   }
   const columns = [
-    { field: 'id', headerName: 'ID', width: 90 },
+    { field: 'id', headerName: 'ID', width: 230 },
     {
       field: 'name',
       headerName: 'Vehicle Name',
-      width: 150,
-      editable: false,
-    },
-    {
-      field: 'uniqNumber',
-      headerName: 'Vehicle Id',
-      width: 150,
+      width: 140,
       editable: false,
     },
     {
       field: 'owner',
       headerName: 'Current Owner',
-      width: 110,
+      width: 180,
     },
     {
       field: 'type_',
       headerName: 'Type',
-      width: 110,
+      width: 120,
     },
     {
       field: 'price',
       headerName: 'Price',
-      width: 110,
+      width: 130,
     },
     {
       field: 'noOFTimeSold',
       headerName: 'Number of Time Sold',
-      width: 110,
+      width: 130,
     },
     {
       field: 'creator',
       headerName: 'Creator',
-      width: 110,
+      width: 180,
     },
-    {
-      field: 'date',
-      headerName: 'When Created',
-      width: 110,
-    },
-    
     // {
-    //   field: 'fullName',
-    //   headerName: 'Full name',
-    //   description: 'This column has a value getter and is not sortable.',
-    //   sortable: false,
-    //   width: 160,
-    //   valueGetter: (params) =>
-    //     `${params.row.firstName || ''} ${params.row.lastName || ''}`,
-    // },
+    //   field: 'mintables',
+    //   headerName: 'Request Product',
+    //   width: 130,
+    //   sortable:false,
+    //   valueGetter: (params) => 
+    //   {<Button onClick={() => {requestForTransfer(`${params.row.id}`)}}>Request this Product</Button>},
+    // }
+    
   ];
+
+  
   
   return (
     <div>
-       {(loading)? <ProgressBar color='primary'/>:<></>}
-      {[  'sm'].map((expand) => (
-        <Navbar key={expand} bg="dark"  expand={expand} className="mb-3">
-          <Container fluid>
-            <Navbar.Brand href="/" style={{"color":"white"}}>Vehicle Tracking</Navbar.Brand>
-            <img src={update} style={{maxBlockSize:'20px'}} onClick={()=> {connectWallet();getDetails() }}></img>
-            <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} />
-            <Navbar.Offcanvas
-              id={`offcanvasNavbar-expand-${expand}`}
-              aria-labelledby={`offcanvasNavbarLabel-expand-${expand}`}
-              placement="end"
-            >
-              <Offcanvas.Header closeButton>
-                <Offcanvas.Title id={`offcanvasNavbarLabel-expand-${expand}`} style={{"color":"white"}}>
-                  Bike Tracking
-                </Offcanvas.Title>
-              </Offcanvas.Header>
-              <Offcanvas.Body>
-                <Nav className="justify-content-end flex-grow-1 pe-3">
-                  <Link className='btn btn-outline-info ms-2' to="/"><img src={back} style={{maxBlockSize:'19px'}}/> Back</Link>
-                  {/* <Link className='btn btn-outline-info ms-2' to="/company">Company</Link> */}
-                 
-                </Nav>
-                <Form className="d-flex">
-                  <Button className='btn-dark btn-outline'><img src={'https://i.redd.it/bfo1798dlo7z.png'} style={{maxBlockSize:'19px'}}/> {balance}</Button>
-                </Form>
-                {/* <Button className='btn-success ms-2' onClick={()=>{conectWallet()}}>{walletButtonText}</Button> */}
-              </Offcanvas.Body>
-            </Navbar.Offcanvas>
-          </Container>
-        </Navbar>
-      ))}
+      <CustomNav backTo="/" loadingColor="primary" loading={loading} balance={balance} funcs={() => {connectWallet();getDetails()}}/>
 
       <Card className={`m-5 pd-${hover}`} onMouseLeave={()=>{setHovering( 1 )}} onMouseEnter={()=>{setHovering( 0 )}}>
         <Card.Header className='bg-dark' style={{color:"white"}}>
           <Card.Title >{(details[1])? <span className="badge bg-success">Verified User ✓</span>:<span className="badge bg-danger" onClick={() => handleIconsClick('tab3')} active={iconsActive === 'tab3'}>✗ Please Create an account</span>}</Card.Title>
         </Card.Header>
         <Card.Body className='p-1 m-5 ms-5'>
+                <Card className='mb-2' style={{textAlign:"left"}}>
+                  <Card.Header style={{background:"#48d1cc"}}>
+                    <h5>Owner: {account} {(details[1])? <span className="badge bg-success">Active</span>:<span className="badge bg-danger">Not Active</span>}</h5>
+                  </Card.Header>
+                  <Card.Body style={{background:"#c9ffe5"}}>
+                    <ListGroup variant="flush">
+                      <ListGroup.Item style={{background:"#c9ffe5"}}>Name: {details[0]}{(details[1])? <img src={verified} style={{maxBlockSize:'25px'}}/>:<></>}</ListGroup.Item>
+                      <ListGroup.Item style={{background:"#c9ffe5"}}>No Of Products: {(details[2] == 0)? <span className="badge bg-warning">Nil</span>:details[2]}</ListGroup.Item>
+                    </ListGroup>
+                  </Card.Body>
+                </Card>
           <div className=''>
             <MDBTabs className='mb-4' >
               <MDBTabsItem >
@@ -246,17 +218,6 @@ function Company() {
 
             <MDBTabsContent >
               <MDBTabsPane show={iconsActive === 'tab1'} style={{textAlign:'left'}} className='m-0 p-2 rounded' >
-                <Card className='mb-2' >
-                  <Card.Header style={{background:"#48d1cc"}}>
-                    <h5>Owner: {account} {(details[1])? <span className="badge bg-success">Active</span>:<span className="badge bg-danger">Not Active</span>}</h5>
-                  </Card.Header>
-                  <Card.Body style={{background:"#c9ffe5"}}>
-                    <ListGroup variant="flush">
-                      <ListGroup.Item style={{background:"#c9ffe5"}}>Name: {details[0]}{(details[1])? <img src={verified} style={{maxBlockSize:'25px'}}/>:<></>}</ListGroup.Item>
-                      <ListGroup.Item style={{background:"#c9ffe5"}}>No Of Products: {(details[2] == 0)? <span className="badge bg-warning">Nil</span>:details[2]}</ListGroup.Item>
-                    </ListGroup>
-                  </Card.Body>
-                </Card>
 
 
                 <Row xs={1} md={3} className="g-2">
@@ -265,19 +226,28 @@ function Company() {
                     <Col>
                       <Card className='mb-3'>
                         <Card.Header style={{background:"#48d1cc"}}>
-                          # {pro.id} {(pro.owner == account)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-success">Owned</span>}
+                          # {pro.id} {(pro.owner == account)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-danger">Sold</span>}
                         </Card.Header>
                         <Card.Body style={{background:"#c9ffe5"}}>
                         <ListGroup variant="flush"  >
                           <ListGroupItem style={{background:"#c9ffe5"}}>Name: {pro.name}</ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>UniqId: {pro.uniqNumber}</ListGroupItem>
+                          {/* <ListGroupItem style={{background:"#c9ffe5"}}>UniqId: {pro.uniqNumber}</ListGroupItem>   */}
                           <ListGroupItem style={{background:"#c9ffe5"}}>Owned: {pro.owner} </ListGroupItem>
                           <ListGroupItem style={{background:"#c9ffe5"}}>Type: {pro.type_}</ListGroupItem>
                           <ListGroupItem style={{background:"#c9ffe5"}}>Number of time Sold: {(pro.noOFTimeSold  == 0)? <span className="badge bg-success">New</span>:pro.noOFTimeSold}</ListGroupItem>
                           <ListGroupItem style={{background:"#c9ffe5"}}>Price: <span className='badge bg-info'>₹ {pro.price}</span></ListGroupItem>
                           <ListGroupItem style={{background:"#c9ffe5"}}>Origin: {pro.creator}</ListGroupItem>
                           <ListGroupItem style={{background:"#c9ffe5"}}>Requested: {pro.requested}</ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Product Created Time: {new Date(pro.date * 1000).toString()}</ListGroupItem>
+                          {/* <ListGroupItem style={{background:"#c9ffe5"}}>Product Created Time: {new Date(pro.date * 1000).toString()}</ListGroupItem> */}
+                          <PopOver actual={pro.date.length} message={
+                              <ListGroup style={{background:"#48d1cc"}}>
+                            {pro.date.map((date, i) => {
+                              return (
+                                <ListGroupItem style={{background:"#48d1cc"}}><span className='badge bg-success'>{i+1}</span> {new Date(date * 1000).toString()}</ListGroupItem>
+                                )
+                              })}
+                            </ListGroup>
+                          } />
                         </ListGroup>
                         </Card.Body>
                         <Card.Footer style={{background:"#48d1cc"}}>
@@ -300,38 +270,54 @@ function Company() {
 
 
               <MDBTabsPane show={iconsActive === 'tab2'} style={{textAlign:'left',background:''}} className='m-0 p-2 rounded'>
-                <Card className='mb-2'>
+                <Card className='mb-2  className=" bg-opacity-10"'>
                   <Card.Header style={{background:"#48d1cc"}}>
                     Explore Products
                   </Card.Header>
                   <Card.Body className=''>
 
-                  <Box sx={{ height: 400, width: '100%' }}>
+                  <Box sx={{ height: 270, width: '100%' }}>
                     <DataGrid
                       rows={mintedProduct}
                       columns={columns}
                       initialState={{
                         pagination: {
                           paginationModel: {
-                            pageSize: 5,
+                            pageSize: 3,
                           },
                         },
                       }}
-                      pageSizeOptions={[5]}
+                      pageSizeOptions={[3]}
                       checkboxSelection
                       disableRowSelectionOnClick
+                      isRowSelectable={(params) => (params.row.requested == "0x0000000000000000000000000000000000000000" && params.row.owner != account) }
+                      onRowSelectionModelChange={(newSelection) => {
+                        setSelect(newSelection);
+                      }}
                     />
-                  </Box>  
+                  </Box>
 
                   </Card.Body>
                   <Card.Footer style={{background:"#48d1cc"}}>
-                    <Button className='ms-2' onClick={()=> {}} disabled={isAddBtn}>Search</Button>
+
+                  <div className="input-group">
+                  <Autocomplete
+                    className='bg-white rounded'
+                    varient='secondary'
+                    onChange={(e, value) => { mintedProduct.map(e => {if (e.id == value){setSelect(e)}})}} 
+                    disablePortal
+                    options={mintedProduct.map(e => e.id)}
+                    sx={{ width: 600 }}
+                    size="small"
+                    renderInput={(params) => <TextField {...params} label="Id" />}
+                  />
+                    <Button className='' disabled>Type and Search</Button>
+                  </div>
                   </Card.Footer>
                 </Card>
                 <Row xs={1} md={3} className="g-2">
                 {mintedProduct.map((pro) => {
-                  if(pro.owner !=  account){
-
+                  if(pro.owner !=  account && select.find(() => {return select[select.indexOf(pro.id)] == pro.id})){
                     return (
                       <Col>
                       <Card className='mb-3'>
@@ -341,14 +327,23 @@ function Company() {
                         <Card.Body style={{background:"#c9ffe5"}}>
                         <ListGroup variant="flush"  >
                           <ListGroupItem style={{background:"#c9ffe5"}}>Name: {pro.name}</ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>UniqId: {pro.uniqNumber}</ListGroupItem>
+                          {/* <ListGroupItem style={{background:"#c9ffe5"}}>UniqId: {pro.uniqNumber}</ListGroupItem> */}
                           <ListGroupItem style={{background:"#c9ffe5"}}>Owned: {pro.owner} </ListGroupItem>
                           <ListGroupItem style={{background:"#c9ffe5"}}>Type: {pro.type_}</ListGroupItem>
                           <ListGroupItem style={{background:"#c9ffe5"}}>Number of time Sold: {(pro.noOFTimeSold  == 0)? <span className="badge bg-success">New</span>:pro.noOFTimeSold}</ListGroupItem>
                           <ListGroupItem style={{background:"#c9ffe5"}}>Price: <span className='badge bg-info'>₹ {pro.price}</span></ListGroupItem>
                           <ListGroupItem style={{background:"#c9ffe5"}}>Origin: {pro.creator}</ListGroupItem>
                           <ListGroupItem style={{background:"#c9ffe5"}}>Requested: {pro.requested}</ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Product Created Time: {new Date(pro.date * 1000).toString()}</ListGroupItem>
+                          {/* <ListGroupItem style={{background:"#c9ffe5"}}>Product Created Time: {new Date(pro.date * 1000).toString()}</ListGroupItem> */}
+                          <PopOver actual={pro.date.length} message={
+                              <ListGroup style={{background:"#48d1cc"}}>
+                            {pro.date.map((date, i) => {
+                              return (
+                                <ListGroupItem style={{background:"#48d1cc"}}><span className='badge bg-success'>{i+1}</span> {new Date(date * 1000).toString()}</ListGroupItem>
+                                )
+                              })}
+                            </ListGroup>
+                          } />
                         </ListGroup>
                         </Card.Body>
                         <Card.Footer style={{background:"#48d1cc"}}>

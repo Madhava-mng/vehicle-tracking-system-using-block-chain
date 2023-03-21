@@ -1,4 +1,4 @@
-export const ProgramID = '0xe48fD4D5a96B07b8C408b799df6Cdf9740B49d2f';
+export const ProgramID = '0xd0F643b051D6acEB78455670cac9Fd71D0160231';
 export const ABI = [
 	{
 		"inputs": [
@@ -63,11 +63,6 @@ export const ABI = [
 					},
 					{
 						"internalType": "string",
-						"name": "uniqNumber",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
 						"name": "name",
 						"type": "string"
 					},
@@ -107,9 +102,9 @@ export const ABI = [
 						"type": "bool"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint256[]",
 						"name": "date",
-						"type": "uint256"
+						"type": "uint256[]"
 					}
 				],
 				"internalType": "struct OwnerShip.Product[]",
@@ -133,11 +128,6 @@ export const ABI = [
 					},
 					{
 						"internalType": "string",
-						"name": "uniqNumber",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
 						"name": "name",
 						"type": "string"
 					},
@@ -177,9 +167,9 @@ export const ABI = [
 						"type": "bool"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint256[]",
 						"name": "date",
-						"type": "uint256"
+						"type": "uint256[]"
 					}
 				],
 				"internalType": "struct OwnerShip.Product[]",
@@ -371,11 +361,6 @@ export const ABI = [
 					},
 					{
 						"internalType": "string",
-						"name": "uniqNumber",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
 						"name": "name",
 						"type": "string"
 					},
@@ -415,9 +400,9 @@ export const ABI = [
 						"type": "bool"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint256[]",
 						"name": "date",
-						"type": "uint256"
+						"type": "uint256[]"
 					}
 				],
 				"internalType": "struct OwnerShip.Product[]",
@@ -595,11 +580,6 @@ export const ABI = [
 			},
 			{
 				"internalType": "string",
-				"name": "uniqNumber",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
 				"name": "name",
 				"type": "string"
 			},
@@ -637,11 +617,6 @@ export const ABI = [
 				"internalType": "bool",
 				"name": "mintable",
 				"type": "bool"
-			},
-			{
-				"internalType": "uint256",
-				"name": "date",
-				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -671,11 +646,6 @@ export const ABI = [
 			{
 				"internalType": "string",
 				"name": "_name",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_uniq",
 				"type": "string"
 			},
 			{

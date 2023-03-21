@@ -15,10 +15,9 @@ import { ABI, ProgramID } from './abi';
 import back from '../png/back.png';
 import verified from '../png/verified.png'
 import { Alert } from '@mui/material'
-import  ProgressBar  from './ProgressBar';
-import update from '../png/update.png'
 import { GridPrintExportMenuItem } from '@mui/x-data-grid';
-import { yellow } from '@mui/material/colors';
+import CustomNav from './CustomNav';
+
 
 function Company() {
 
@@ -47,7 +46,7 @@ function Company() {
   const [sortBy, setSortBy] = useState("Id");
   const [defaultEmployeeDetail, setDefaultEmployeeDetail] = useState([]);
 
-  async function abc(){
+  async function getDetails(){
     setLoading(true);
     let data_ =  await contract.methods.getCompanyDetails().call({from: account})
     setDetails(data_);
@@ -59,7 +58,7 @@ function Company() {
     // setLoading(false);
   }
   useEffect(() => {
-      abc();
+      getDetails();
   },[account])
 
   useEffect(() => {
@@ -104,7 +103,7 @@ function Company() {
   async function createCompany(){
     let data_ = await contract.methods.newCompany(companyName).send({from: account});
     setAltErr(<Alert show={true}  className='m-3' severity="success" onClose={() => {handleIconsClick('tab2');setAltErr(<></>)}}>Company created. Add some Employee</Alert>)
-    await abc();
+    await getDetails();
     console.log(data_);
   }
 
@@ -118,12 +117,12 @@ function Company() {
         setAltErr(<Alert show={true}  className='m-3' severity="info" onClose={() => {setAltErr(<></>)}}>Operation done</Alert>)
         console.log(data);
       }else{
-        setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>This Employee already Exiest</Alert>)
+        setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>This Employee already Exiest in a Company</Alert>)
       }
     }catch(e){
       setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>{e.message}</Alert>)
     }
-    await abc()
+    await getDetails()
   }
 
   async function taggleEmpStatus(addr){
@@ -134,7 +133,7 @@ function Company() {
     }catch(e){
       setAltErr(<Alert show={true}  className='m-3' severity="error" onClose={() => {setAltErr(<></>)}}>{e.message}</Alert>)
     }
-    await abc()
+    await getDetails()
   }
 
   function handleIconsClick(value) {
@@ -161,37 +160,7 @@ function Company() {
     
     return (
       <div>
-      {(loading)? <ProgressBar color='primary'/>:<></>}
-      {/* <Chart /> */}
-      {['sm'].map((expand) => (
-        <Navbar key={expand} bg="dark"  expand={expand} className="mb-3 bg-opacity-10"  >
-          <Container fluid>
-            <Navbar.Brand href="/" style={{"color":"white"}}>Vehicle Tracking</Navbar.Brand>
-          <img src={update} style={{maxBlockSize:'20px'}} onClick={()=> {connectWallet();abc() }}></img>
-            <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} />
-            <Navbar.Offcanvas
-              id={`offcanvasNavbar-expand-${expand}`}
-              aria-labelledby={`offcanvasNavbarLabel-expand-${expand}`}
-              placement="end"
-            >
-              <Offcanvas.Header closeButton>
-                <Offcanvas.Title id={`offcanvasNavbarLabel-expand-${expand}`} style={{"color":"white"}}>
-                  Vehicle Tracking
-                </Offcanvas.Title>
-              </Offcanvas.Header>
-              <Offcanvas.Body>
-                <Nav className="justify-content-end flex-grow-1 pe-3">
-                  <Link className='btn btn-outline-info ms-2' to="/seller"><img src={back} style={{maxBlockSize:'19px'}}/> Back</Link>
-                  {/* <Link className='btn btn-outline-info ms-2' to="/employee">Employee &gt;</Link> */}
-                </Nav>
-                <Form className="d-flex">
-                </Form>
-                <Button className='btn-dark btn-outline'><img src={'https://i.redd.it/bfo1798dlo7z.png'} style={{maxBlockSize:'19px'}}/> {balance}</Button>
-              </Offcanvas.Body>
-            </Navbar.Offcanvas>
-          </Container>
-        </Navbar>
-      ))}
+        <CustomNav backTo="/seller" loadingColor="primary" loading={loading} balance={balance} funcs={() => {connectWallet();getDetails()}}/>
       
 
       <Card className={`m-5 pd-${hover}`} onMouseLeave={()=>{setHovering( 1 )}} onMouseEnter={()=>{setHovering( 0 )}}>
@@ -200,6 +169,22 @@ function Company() {
           <Card.Title >My Company</Card.Title>
         </Card.Header>
         <Card.Body className='p-1 m-5 ms-5'>
+          <Card className='mb-2 bg-opacity-10' style={{"textAlign":"left"}} >
+            <Card.Header style={{background:"#deb887"}}>
+              <h5>Owner: {account}</h5>
+            </Card.Header>
+            <Card.Body style={{background:"#FFF8E1"}}>
+              {details[0] != ''?
+            <ListGroup variant="flush" >
+                <ListGroup.Item style={{background:"#FFF8E1"}}>Name: {details[0]} {(details[2] > 0)? <img src={verified} style={{maxBlockSize:'25px'}}/>:<></>}</ListGroup.Item>
+                <ListGroup.Item style={{background:"#FFF8E1"}}>No Of Employee: {(details[2] == 0)? <span className="badge bg-warning">Nil</span>:details[2]}</ListGroup.Item>
+                <ListGroup.Item style={{background:"#FFF8E1"}}>No Of Products: {(details[3] == 0)? <span className="badge bg-warning">Nil</span>:details[3]}</ListGroup.Item>
+                <ListGroup.Item style={{background:"#FFF8E1"}}>Company Status: {(details[4])?  <span className="badge bg-success">Open</span>:<span className="badge bg-danger">Close</span>}</ListGroup.Item>
+                <ListGroup.Item style={{background:"#FFF8E1"}}></ListGroup.Item>
+            </ListGroup>
+            :<></>}
+            </Card.Body>
+          </Card>
           <div className=''>
             <MDBTabs className='mb-3' >
               <MDBTabsItem >
@@ -223,24 +208,6 @@ function Company() {
 
             <MDBTabsContent style={{background:""}} className='rounded' >
               <MDBTabsPane show={iconsActive === 'tab1'} style={{textAlign:'left',background:''}} className='m-0 p-2 rounded' >
-                <Card className='mb-2 bg-opacity-10 ' >
-                  <Card.Header style={{background:"#deb887"}}>
-                    <h5>Owner: {account}</h5>
-                  </Card.Header>
-                  <Card.Body style={{background:"#FFF8E1"}}>
-                    {details[0] != ''?
-                  <ListGroup variant="flush" >
-                      <ListGroup.Item style={{background:"#FFF8E1"}}>Name: {details[0]} {(details[2] > 0)? <img src={verified} style={{maxBlockSize:'25px'}}/>:<></>}</ListGroup.Item>
-                      <ListGroup.Item style={{background:"#FFF8E1"}}>No Of Employee: {(details[2] == 0)? <span className="badge bg-warning">Nil</span>:details[2]}</ListGroup.Item>
-                      <ListGroup.Item style={{background:"#FFF8E1"}}>No Of Products: {(details[3] == 0)? <span className="badge bg-warning">Nil</span>:details[3]}</ListGroup.Item>
-                      <ListGroup.Item style={{background:"#FFF8E1"}}>Company Status: {(details[4])?  <span className="badge bg-success">Open</span>:<span className="badge bg-danger">Close</span>}</ListGroup.Item>
-                      <ListGroup.Item style={{background:"#FFF8E1"}}></ListGroup.Item>
-                  </ListGroup>
-                  :<></>}
-                  </Card.Body>
-                  <Card.Footer style={{background:"#deb887"}}>
-                  </Card.Footer>
-                </Card>
 
                 {['sm'].map((expand) => (
                   <Navbar key={expand} bg="" style={{background:"#FFF8E1"}}  expand={expand} className="mb-3 rounded">
@@ -260,7 +227,7 @@ function Company() {
                           <Nav className="justify-content-end flex-grow-1 pe-3">
                             
                           </Nav>
-                          <div className="input-group">
+                  <div className="input-group">
                     <div className="input-group-prepend">
                       <span className="input-group-text ms-2" id="">Show</span>
                     </div>

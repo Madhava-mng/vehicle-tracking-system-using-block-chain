@@ -1,7 +1,5 @@
 import React from 'react'
 import Button from 'react-bootstrap/Button';
-import Container from 'react-bootstrap/Container';
-import Form from 'react-bootstrap/Form';
 import {Card, FormControl, ListGroup, ListGroupItem, Row, Col} from 'react-bootstrap';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
@@ -13,9 +11,12 @@ import Web3 from 'web3';
 import {MDBTabs,MDBTabsItem,MDBTabsLink,MDBTabsContent,MDBTabsPane} from 'mdb-react-ui-kit';
 import { ABI, ProgramID } from './abi';
 import back from '../png/back.png';
-import { Alert } from '@mui/material'
-import  ProgressBar  from './ProgressBar';
-import update from '../png/update.png'
+import { Alert, Popover } from '@mui/material'
+import CustomNav from './CustomNav';
+import Container from 'react-bootstrap/Container';
+import Form from 'react-bootstrap/Form';
+import PopOver from './PopOver';
+import verified from '../png/verified.png'
 
 
 
@@ -42,6 +43,11 @@ function Company() {
 
   const [isAddBtn, setIsAddBtn] = useState(true);
 
+  const [showOnly, setShowOnly] = useState("All");
+  const [sortBy, setSortBy] = useState("Id");
+  const [defaultProductDetail, setDefaultProductDetail] = useState([]);
+  const [cmpName, setCmpName] = useState("");
+
   function handleIconsClick(value) {
     if (value === iconsActive) {
       return;
@@ -57,7 +63,10 @@ function Company() {
     console.log(_emp);
     setDetails(_emp);
     setProductDetails(_details);
+    setDefaultProductDetail(_details);
     setTimeout(() => {setLoading(false)}, 3300);
+    console.log(_details);
+    setCmpName(await contract.methods.map_getCompanyName(_emp.company).call({from:account}));
   }
 
   
@@ -65,7 +74,6 @@ function Company() {
   async function newProduct(){
     let _newProduct = await contract.methods.newProduct(
       vName,
-      vUid,
       vType,
       vPrice
     ).send({from: account});
@@ -134,46 +142,74 @@ function Company() {
       clearInterval(I)
     }
   }, [tmp])
+
+  useEffect(() => {
+    let tmp = [];
+    let tmp2 = [];
+    tmp = productDetails.slice(); 
+    if(sortBy == 'Default'){
+      setProductDetails(defaultProductDetail);
+    }else if(sortBy == 'Count'){
+
+      if(tmp.length > 0){
+        while(tmp.length){
+          let t = tmp.pop();
+          if(tmp2.length == 0){
+            tmp2.push(t);
+          }else{
+            while(tmp2.length > 0 && tmp2[tmp2.length-1].product_count > t.product_count){
+              tmp.push(tmp2.pop());
+            }
+            tmp2.push(t);
+          }
+        }
+      }
+      setProductDetails(tmp2);
+    }else if(sortBy == 'Price'){
+
+      if(tmp.length > 0){
+        while(tmp.length){
+          let t = tmp.pop();
+          if(tmp2.length == 0){
+            tmp2.push(t);
+          }else{
+            while(tmp2.length > 0 && Number(tmp2[tmp2.length-1].price) > Number(t.price)){
+              tmp.push(tmp2.pop());
+            }
+            tmp2.push(t);
+          }
+        }
+      }
+      setProductDetails(tmp2);
+    }else if(sortBy == 'Name'){
+      tmp.sort((a, b) => a.name.normalize().localeCompare(b.name.normalize()));
+      setProductDetails(tmp);
+    }
+  }, [sortBy])
+
   return (
     <div>
-      {(loading)? <ProgressBar color='secondary'/>:<></>}
-      {[  'sm'].map((expand) => (
-        <Navbar key={expand} bg="dark"  expand={expand} className="mb-3">
-          <Container fluid>
-            <Navbar.Brand href="/" style={{"color":"white"}}>Vehicle Tracking</Navbar.Brand>
-            <img src={update} style={{maxBlockSize:'20px'}} onClick={()=> {connectWallet();getDetails() }}></img>
-            <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} />
-            <Navbar.Offcanvas
-              id={`offcanvasNavbar-expand-${expand}`}
-              aria-labelledby={`offcanvasNavbarLabel-expand-${expand}`}
-              placement="end"
-              >
-              <Offcanvas.Header closeButton>
-                <Offcanvas.Title id={`offcanvasNavbarLabel-expand-${expand}`} style={{"color":"white"}}>
-                  Bike Tracking
-                </Offcanvas.Title>
-              </Offcanvas.Header>
-              <Offcanvas.Body>
-                <Nav className="justify-content-end flex-grow-1 pe-3">
-                  <Link className='btn btn-outline-info ms-2' to="/seller"><img src={back} style={{maxBlockSize:'19px'}}/> Back</Link>
-                  {/* <Link className='btn btn-outline-info ms-2' to="/company">Company</Link> */}
-                 
-                </Nav>
-                <Form className="d-flex">
-                  <Button className='btn-dark btn-outline'><img src={'https://i.redd.it/bfo1798dlo7z.png'} style={{maxBlockSize:'19px'}}/> {balance}</Button>
-                </Form>
-                {/* <Button className='btn-success ms-2' onClick={()=>{conectWallet()}}>{walletButtonText}</Button> */}
-              </Offcanvas.Body>
-            </Navbar.Offcanvas>
-          </Container>
-        </Navbar>
-      ))}
-
+      <CustomNav backTo="/seller" loadingColor="secondary" loading={loading} balance={balance} funcs={() => {connectWallet();getDetails()}}/>
+     
       <Card className={`m-5 pd-${hover}`} onMouseLeave={()=>{setHovering( 1 )}} onMouseEnter={()=>{setHovering( 0 )}}>
         <Card.Header className='bg-dark' style={{color:"white"}}>
           <Card.Title >{(details[3])? <span className="badge bg-success">Verified Employee ✓</span>:<span className="badge bg-danger">✗ You are not belongs to any Company</span>}</Card.Title>
         </Card.Header>
         <Card.Body className='p-1 m-5 ms-5'>
+          <Card className='mb-2' style={{textAlign:"left"}}>
+            <Card.Header style={{background:"#CE93D8"}}>
+              <h5>Owner: {account} {(details[4])? <span className="badge bg-success">Active</span>:<span className="badge bg-danger">Not Active</span>}</h5>
+            </Card.Header>
+            <Card.Body style={{background:"#F3E5F5"}}>
+              {(details[0])?
+              <ListGroup variant="flush">
+                <ListGroup.Item style={{background:"#F3E5F5"}}>Name: {details[0]} {details[5] != 0? <img src={verified} style={{maxBlockSize:'25px'}}/>:<></>}</ListGroup.Item>
+                <ListGroup.Item style={{background:"#F3E5F5"}}>Company: {cmpName} ({details[2]}) </ListGroup.Item>
+                <ListGroup.Item style={{background:"#F3E5F5"}}>No Of Products: {(details[5] == 0)? <span className="badge bg-warning">Nil</span>:details[5]}</ListGroup.Item>
+              </ListGroup>:<></>
+              }
+            </Card.Body>
+          </Card>
           <div className=''>
             <MDBTabs className='mb-4' >
               <MDBTabsItem >
@@ -191,42 +227,97 @@ function Company() {
             <MDBTabsContent >
           {altErr}
               <MDBTabsPane show={iconsActive === 'tab1'} style={{textAlign:'left'}} className='m-0 p-2 rounded' >
-                <Card className='mb-2' >
-                  <Card.Header style={{background:"#CE93D8"}}>
-                    <h5>Owner: {account} {(details[4])? <span className="badge bg-success">Active</span>:<span className="badge bg-danger">Not Active</span>}</h5>
-                  </Card.Header>
-                  <Card.Body style={{background:"#F3E5F5"}}>
-                    {(details[0])?
-                    <ListGroup variant="flush">
-                      <ListGroup.Item style={{background:"#F3E5F5"}}>Name: {details[0]}</ListGroup.Item>
-                      <ListGroup.Item style={{background:"#F3E5F5"}}>Company: {details[2]}</ListGroup.Item>
-                      <ListGroup.Item style={{background:"#F3E5F5"}}>No Of Products: {(details[5] == 0)? <span className="badge bg-warning">Nil</span>:details[5]}</ListGroup.Item>
-                    </ListGroup>:<></>
-                    }
-                  </Card.Body>
-                </Card>
 
+                {['sm'].map((expand) => (
+                  <Navbar key={expand} bg="" style={{background:"#F3E5F5"}}  expand={expand} className="mb-3 rounded">
+                    <Container fluid>
+                      <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} />
+                      <Navbar.Offcanvas
+                        id={`offcanvasNavbar-expand-${expand}`}
+                        aria-labelledby={`offcanvasNavbarLabel-expand-${expand}`}
+                        placement="end"
+                      >
+                        <Offcanvas.Header closeButton>
+                          <Offcanvas.Title id={`offcanvasNavbarLabel-expand-${expand}`} style={{"color":"white"}}>
+                            Vehicle Tracking
+                          </Offcanvas.Title>
+                        </Offcanvas.Header>
+                        <Offcanvas.Body>
+                          <Nav className="justify-content-end flex-grow-1 pe-3">
+                            
+                          </Nav>
+                  <div className="input-group">
+                    <div className="input-group-prepend">
+                      <span className="input-group-text ms-2" id="">Show</span>
+                    </div>
+                    <select onClick={(e)=> {setShowOnly( e.target.value)}} className="form-control form-select" style={{maxWidth: '150px', marginLeft:'-5px'}}>
+                      <option className="form-control rounded" selected>All</option>
+                      <option className="form-control rounded">Minted</option>
+                      <option className="form-control rounded">Not Minted</option>
+                      <option className="form-control rounded">Sold</option>
+                      <option className="form-control rounded">Requested</option>
+                    </select>
+                  </div>
+                  <div className="input-group">
+                    <div className="input-group-prepend">
+                      <span className="input-group-text ms-2" id="">Sort By</span>
+                    </div>
+                    <select onClick={(e)=> {setSortBy( e.target.value)}} className="form-control form-select" style={{maxWidth: '120px', marginLeft:'-5px'}}>
+                      <option className="form-control rounded" selected>Default</option>
+                      <option className="form-control rounded">Name</option>
+                      <option className="form-control rounded">Count</option>
+                      <option className="form-control rounded">Price</option>
+                    </select>
+                  </div>
+                  <div className="input-group">
+                      <div className="input-group-prepend">
+                        <span className="input-group-text ms-2" id="">View</span>
+                      </div>
+                      <Button className='btn-secondary' onClick={() => {let tmp = productDetails.slice().reverse(); setProductDetails(tmp)}}>Inverte</Button>
+                    </div>
+                          <Form className="d-flex">
+                          </Form>
+                        </Offcanvas.Body>
+                      </Navbar.Offcanvas>
+                    </Container>
+                  </Navbar>
+                ))}
 
-                <Row xs={1} md={3} className="g-2">
+                <Row xs={1} md={3} className="g-2 p-2 rounded"  style={{background:""}} >
                 {productDetails.map((pro) => {
+                  console.log(`*${showOnly}*`);
+                  if(showOnly == 'All' || 
+                  (showOnly == 'Minted' && pro.mintable && pro.owner == pro.creator) || 
+                  (showOnly == "Not Minted" && !pro.mintable) || (showOnly == "Sold" && pro.owner != pro.creator) || 
+                  (showOnly == "Requested" && pro.requested != '0x0000000000000000000000000000000000000000' && pro.owner == account)){
                   return (
                     <Col>
                       <Card className='mb-3'>
                         <Card.Header style={{background:"#CE93D8"}}>
-                          # {pro.id} {(pro.owner == pro.creator)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-success">Sold</span>}
+                          # {pro.id} {(pro.owner == pro.creator)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-info">Sold</span>}
                         </Card.Header>
                         <Card.Body style={{background:"#F3E5F5"}}>
                         <ListGroup variant="flush"  >
                           <ListGroupItem style={{background:"#F3E5F5"}}>Name: {pro.name}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>UniqId: {pro.uniqNumber}</ListGroupItem>
+                          {/* <ListGroupItem style={{background:"#F3E5F5"}}>UniqId: {pro.uniqNumber}</ListGroupItem> */}
                           <ListGroupItem style={{background:"#F3E5F5"}}>Owned: {pro.owner} </ListGroupItem>
                           <ListGroupItem style={{background:"#F3E5F5"}}>Type: {pro.type_}</ListGroupItem>
                           <ListGroupItem style={{background:"#F3E5F5"}}>Number of time Sold: {(pro.noOFTimeSold  == 0)? <span className="badge bg-success">New</span>:pro.noOFTimeSold}</ListGroupItem>
                           <ListGroupItem style={{background:"#F3E5F5"}}>Price: <span className='badge bg-info'>₹ {pro.price}</span></ListGroupItem>
                           <ListGroupItem style={{background:"#F3E5F5"}}>Origin: {pro.creator}</ListGroupItem>
                           <ListGroupItem style={{background:"#F3E5F5"}}>Requested: {pro.requested}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Product Created Time: {new Date(pro.date * 1000).toString()}</ListGroupItem>
-                        </ListGroup>
+                          <ListGroupItem style={{background:"#F3E5F5"}}>
+                            <PopOver actual={pro.date.length} message={
+                              <ListGroup style={{background:"#CE93D8"}}>
+                            {pro.date.map((date, i) => {
+                              return (
+                                <ListGroupItem style={{background:"#CE93D8"}}><span className='badge bg-success'>{i+1}</span> {new Date(date * 1000).toString()}</ListGroupItem>
+                                )
+                              })}
+                            </ListGroup>
+                          } />
+                          </ListGroupItem>
+                          </ListGroup>
                         </Card.Body>
                         <Card.Footer style={{background:"#CE93D8"}}>
                         
@@ -241,7 +332,7 @@ function Company() {
                         </Card.Footer>
                       </Card>
                     </Col>
-                    )
+                    )}
                   })}
                   </Row>
               </MDBTabsPane>
@@ -259,6 +350,7 @@ function Company() {
                     <FormControl onChange={(e)=> {setVPrice(e.target.value)}} className='m-2 p-2' placeholder='$ price' type="number" required></FormControl>
                   </Card.Body>
                   <Card.Footer style={{background:"#CE93D8"}}>
+                    
                     <Button className='ms-2' onClick={()=> {newProduct()}} disabled={isAddBtn}>Add Vehicle</Button>
                   </Card.Footer>
                 </Card>

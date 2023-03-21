@@ -5,6 +5,7 @@
   "dependencies": {
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
+    "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.11.13",
     "@mui/x-data-grid": "^6.0.1",
     "@testing-library/jest-dom": "^5.16.5",
@@ -31,6 +32,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "serv": "serve -s build",
+    "servssl": "serve --ssl-cert cert/cert.pem --ssl-key cert/key.pem  -s build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
