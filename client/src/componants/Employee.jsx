@@ -17,8 +17,18 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import PopOver from './PopOver';
 import verified from '../png/verified.png'
+import KeyValue from './KeyValue';
 
 
+import EngineeringIcon from '@mui/icons-material/Engineering';
+import EmojiTransportationIcon from '@mui/icons-material/EmojiTransportation';
+import BusinessIcon from '@mui/icons-material/Business';
+import FaceIcon from '@mui/icons-material/Face';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
+import SellIcon from '@mui/icons-material/Sell';
+import CarCrashIcon from '@mui/icons-material/CarCrash';
+import FingerprintIcon from '@mui/icons-material/Fingerprint';
 
 function Company() {
 
@@ -34,7 +44,6 @@ function Company() {
   const [productDetails, setProductDetails] = useState([]);
 
   const [vName, setVName] = useState("");
-  const [vUid, setVUid] = useState("");
   const [vType, setVType] = useState("");
   const [vPrice, setVPrice] = useState("");
   const [altErr, setAltErr] = useState(<Alert show={true}  className='m-3' severity="info" onClose={() => {setAltErr(<></>)}}>Welcome {details[0]}</Alert>);
@@ -83,8 +92,8 @@ function Company() {
   }
   
   useEffect(() => {
-    setIsAddBtn((vName.length > 1 && vPrice > 0 && vType.length > 1 && vUid.length > 2 && details[3] && details[4])? false: true);
-  }, [vName,vPrice, vType, vUid])
+    setIsAddBtn((vName.length > 1 && vPrice > 0 && vType.length > 1  && details[3] && details[4])? false: true);
+  }, [vName,vPrice, vType])
   
   async function taggleMintable(_addr){
     try{
@@ -198,14 +207,14 @@ function Company() {
         <Card.Body className='p-1 m-5 ms-5'>
           <Card className='mb-2' style={{textAlign:"left"}}>
             <Card.Header style={{background:"#CE93D8"}}>
-              <h5>Owner: {account} {(details[4])? <span className="badge bg-success">Active</span>:<span className="badge bg-danger">Not Active</span>}</h5>
+              <h5>{account} {(details[4])? <span className="badge bg-success">Active</span>:<span className="badge bg-danger">Not Active</span>}</h5>
             </Card.Header>
             <Card.Body style={{background:"#F3E5F5"}}>
               {(details[0])?
               <ListGroup variant="flush">
-                <ListGroup.Item style={{background:"#F3E5F5"}}>Name: {details[0]} {details[5] != 0? <img src={verified} style={{maxBlockSize:'25px'}}/>:<></>}</ListGroup.Item>
-                <ListGroup.Item style={{background:"#F3E5F5"}}>Company: {cmpName} ({details[2]}) </ListGroup.Item>
-                <ListGroup.Item style={{background:"#F3E5F5"}}>No Of Products: {(details[5] == 0)? <span className="badge bg-warning">Nil</span>:details[5]}</ListGroup.Item>
+                <KeyValue keys="Name" value={<>{details[0]} {details[5] != 0? <img src={verified} style={{maxBlockSize:'25px'}}/>:<></>}</>} icon={<EngineeringIcon/>} bg="#F3E5F5"/>
+                <KeyValue keys="Number of Vehicle" value={(details[5] == 0)? <span className="badge bg-warning">Nil</span>:details[5]} icon={<EmojiTransportationIcon />} bg="#F3E5F5 "/>
+                <KeyValue keys="Name of the company" value={<>{cmpName} ({details[2]})</>} icon={<BusinessIcon />} bg="#F3E5F5 "/>
               </ListGroup>:<></>
               }
             </Card.Body>
@@ -290,50 +299,54 @@ function Company() {
                   (showOnly == 'Minted' && pro.mintable && pro.owner == pro.creator) || 
                   (showOnly == "Not Minted" && !pro.mintable) || (showOnly == "Sold" && pro.owner != pro.creator) || 
                   (showOnly == "Requested" && pro.requested != '0x0000000000000000000000000000000000000000' && pro.owner == account)){
-                  return (
-                    <Col>
-                      <Card className='mb-3'>
-                        <Card.Header style={{background:"#CE93D8"}}>
-                          # {pro.id} {(pro.owner == pro.creator)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-info">Sold</span>}
-                        </Card.Header>
-                        <Card.Body style={{background:"#F3E5F5"}}>
-                        <ListGroup variant="flush"  >
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Name: {pro.name}</ListGroupItem>
-                          {/* <ListGroupItem style={{background:"#F3E5F5"}}>UniqId: {pro.uniqNumber}</ListGroupItem> */}
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Owned: {pro.owner} </ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Type: {pro.type_}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Number of time Sold: {(pro.noOFTimeSold  == 0)? <span className="badge bg-success">New</span>:pro.noOFTimeSold}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Price: <span className='badge bg-info'>₹ {pro.price}</span></ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Origin: {pro.creator}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>Requested: {pro.requested}</ListGroupItem>
-                          <ListGroupItem style={{background:"#F3E5F5"}}>
-                            <PopOver actual={pro.date.length} message={
-                              <ListGroup style={{background:"#CE93D8"}}>
-                            {pro.date.map((date, i) => {
-                              return (
-                                <ListGroupItem style={{background:"#CE93D8"}}><span className='badge bg-success'>{i+1}</span> {new Date(date * 1000).toString()}</ListGroupItem>
-                                )
-                              })}
-                            </ListGroup>
-                          } />
-                          </ListGroupItem>
-                          </ListGroup>
-                        </Card.Body>
-                        <Card.Footer style={{background:"#CE93D8"}}>
-                        
-                          {(pro.owner == pro.creator)? <Button onClick={() => {taggleMintable(pro.id)}} className={`btn-${(pro.mintable)? "danger":"success"}`} disabled={!details[4]}>{(pro.mintable)? "Not Mint":"Mint"}</Button>:<Button disabled>Sold out</Button>}
-                          {(pro.requested != '0x0000000000000000000000000000000000000000' && pro.owner == pro.creator)? 
-                            <>
-                              <Button className="ms-1 btn-danger"  onClick={() => {transferOwner(pro.id)}} disabled={!details[4]}>Transfer</Button>
-                              <Button className="ms-1 btn-warning" onClick={() => {clearRequest(pro.id)}} disabled={!details[4]}>Clear</Button>
-                            </>
-                            :<></>
-                          }
-                        </Card.Footer>
-                      </Card>
-                    </Col>
-                    )}
-                  })}
+                      return (
+                        <Col>
+                          <Card className='mb-3'>
+                            <Card.Header style={{background:"#CE93D8"}}>
+                              # {pro.id} {(pro.owner == pro.creator)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-info">Sold</span>}
+                            </Card.Header>
+                            <Card.Body style={{background:"#F3E5F5"}}>
+                            <ListGroup variant="flush">
+                              <KeyValue keys="Vehicel Identify Number" value={pro.name} icon={<FingerprintIcon/>} bg="#F3E5F5"/>
+                              {/* <ListGroupItem style={{background:"#F3E5F5"}}>UniqId: {pro.uniqNumber}</ListGroupItem> */}
+                              <KeyValue keys="Owned" value={pro.owner} icon={<FaceIcon/>} bg="#F3E5F5"/>
+                              <KeyValue keys="Type of the Vehicle" value={pro.type_} icon={<CarCrashIcon/>} bg="#F3E5F5"/>
+                              <KeyValue keys="Number of time Sold" value={(pro.noOFTimeSold  == 0)? <span className="badge bg-success">New</span>:pro.noOFTimeSold} icon={<SellIcon/>} bg="#F3E5F5"/>
+                              <KeyValue keys="Price" value={<span className='badge bg-info'>₹ {pro.price}</span>} icon={<CurrencyRupeeIcon/>} bg="#F3E5F5"/>
+                              <KeyValue keys="Creator" value={pro.creator} icon={<EngineeringIcon/>} bg="#F3E5F5"/>
+                              <KeyValue keys="Requested" value={pro.requested} icon={<GroupAddIcon/>} bg="#F3E5F5"/>
+
+                              <ListGroupItem style={{background:"#F3E5F5"}}>
+                                <PopOver actual={pro.date.length} message={
+                                  <ListGroup style={{background:"#CE93D8"}}>
+                                {pro.date.map((date, i) => {
+                                  return (
+                                    <ListGroupItem style={{background:"#CE93D8"}}><span className='badge bg-success'>{i+1}</span> {new Date(date * 1000).toString()}</ListGroupItem>
+                                    )
+                                  })}
+                                </ListGroup>
+                              } />
+                              </ListGroupItem>
+                              </ListGroup>
+                            </Card.Body>
+                            <Card.Footer style={{background:"#CE93D8"}}>
+                            
+                              {(pro.owner == pro.creator)? <Button onClick={() => {taggleMintable(pro.id)}} className={`btn-${(pro.mintable)? "danger":"success"}`} disabled={!details[4]}>{(pro.mintable)? "Not Mint":"Mint"}</Button>:<Button disabled>Sold out</Button>}
+                              {(pro.requested != '0x0000000000000000000000000000000000000000' && pro.owner == pro.creator)? 
+                                <>
+                                  <Button className="ms-1 btn-danger"  onClick={() => {transferOwner(pro.id)}} disabled={!details[4]}>Transfer</Button>
+                                  <Button className="ms-1 btn-warning" onClick={() => {clearRequest(pro.id)}} disabled={!details[4]}>Clear</Button>
+                                </>
+                                :<></>
+                              }
+                            </Card.Footer>
+                          </Card>
+                        </Col>
+                      )
+                      // sleep(1000);
+                  }
+                }
+              )}
                   </Row>
               </MDBTabsPane>
 
@@ -344,10 +357,10 @@ function Company() {
                     Add Product
                   </Card.Header>
                   <Card.Body style={{background:"#F3E5F5"}}>
-                    <FormControl onChange={(e)=> {setVName(e.target.value)}} className='m-2 p-2' placeholder='Vehicle Name' required></FormControl>
-                    <FormControl onChange={(e)=> {setVUid(e.target.value)}} className='m-2 p-2' placeholder='Uniq Id' required></FormControl>
-                    <FormControl onChange={(e)=> {setVType(e.target.value)}} className='m-2 p-2' placeholder='Type' required></FormControl>
-                    <FormControl onChange={(e)=> {setVPrice(e.target.value)}} className='m-2 p-2' placeholder='$ price' type="number" required></FormControl>
+                    <FormControl onChange={(e)=> {setVName(e.target.value)}} className='m-2 p-2' placeholder='Vehicle Itentity Number' required></FormControl>
+                    {/* <FormControl onChange={(e)=> {setVUid(e.target.value)}} className='m-2 p-2' placeholder='Uniq Id' required></FormControl> */}
+                    <FormControl onChange={(e)=> {setVType(e.target.value)}} className='m-2 p-2' placeholder='Type of the Vehicle' required></FormControl>
+                    <FormControl onChange={(e)=> {setVPrice(e.target.value)}} className='m-2 p-2' placeholder='₹ Price' type="number" required></FormControl>
                   </Card.Body>
                   <Card.Footer style={{background:"#CE93D8"}}>
                     

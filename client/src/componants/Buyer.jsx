@@ -1,6 +1,6 @@
 import React from 'react'
 import Button from 'react-bootstrap/Button';
-import {Card, FormControl, ListGroup, ListGroupItem, Row, Col, InputGroup} from 'react-bootstrap';
+import {Card, FormControl, ListGroup, ListGroupItem, Row, Col, InputGroup, Badge} from 'react-bootstrap';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
@@ -16,9 +16,19 @@ import Box from '@mui/material/Box';
 import { DataGrid } from '@mui/x-data-grid';
 import CustomNav from './CustomNav';
 import { GridRowParams } from '@mui/x-data-grid';
-import {Autocomplete,TextField }from '@mui/material';
+import {Autocomplete,Avatar,TableBody,TextField }from '@mui/material';
 import PopOver from './PopOver';
+import KeyValue from './KeyValue';
 
+import FaceIcon from '@mui/icons-material/Face';
+import AirportShuttle from '@mui/icons-material/AirportShuttle';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
+import SellIcon from '@mui/icons-material/Sell';
+import CarCrashIcon from '@mui/icons-material/CarCrash';
+import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import EngineeringIcon from '@mui/icons-material/Engineering';
+import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 
 
 function Company() {
@@ -192,8 +202,10 @@ function Company() {
                   </Card.Header>
                   <Card.Body style={{background:"#c9ffe5"}}>
                     <ListGroup variant="flush">
-                      <ListGroup.Item style={{background:"#c9ffe5"}}>Name: {details[0]}{(details[1])? <img src={verified} style={{maxBlockSize:'25px'}}/>:<></>}</ListGroup.Item>
-                      <ListGroup.Item style={{background:"#c9ffe5"}}>No Of Products: {(details[2] == 0)? <span className="badge bg-warning">Nil</span>:details[2]}</ListGroup.Item>
+                      <TableBody>
+                          <KeyValue keys="Name" value={<>{details[0]} {(details[1])? <img src={verified} style={{maxBlockSize:'25px'}}/>:<></>}</>} icon={<FaceIcon/>} bg="#c9ffe5"/>
+                          <KeyValue keys="Number of Products" value={(details[2] == 0)? <span className="badge bg-warning">Nil</span>:details[2]} icon={<AirportShuttle/>} bg="#c9ffe5"/>
+                      </TableBody>
                     </ListGroup>
                   </Card.Body>
                 </Card>
@@ -230,14 +242,14 @@ function Company() {
                         </Card.Header>
                         <Card.Body style={{background:"#c9ffe5"}}>
                         <ListGroup variant="flush"  >
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Name: {pro.name}</ListGroupItem>
-                          {/* <ListGroupItem style={{background:"#c9ffe5"}}>UniqId: {pro.uniqNumber}</ListGroupItem>   */}
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Owned: {pro.owner} </ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Type: {pro.type_}</ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Number of time Sold: {(pro.noOFTimeSold  == 0)? <span className="badge bg-success">New</span>:pro.noOFTimeSold}</ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Price: <span className='badge bg-info'>₹ {pro.price}</span></ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Origin: {pro.creator}</ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Requested: {pro.requested}</ListGroupItem>
+                              <KeyValue keys="Vehicel Identify Number" value={pro.name} icon={<FingerprintIcon/>} bg="#c9ffe5"/>
+                              {/* <ListGroupItem style={{background:"#F3E5F5"}}>UniqId: {pro.uniqNumber}</ListGroupItem> */}
+                              <KeyValue keys="Owned" value={pro.owner} icon={<FaceIcon/>} bg="#c9ffe5"/>
+                              <KeyValue keys="Type of the Vehicle" value={pro.type_} icon={<CarCrashIcon/>} bg="#c9ffe5"/>
+                              <KeyValue keys="Number of time Sold" value={(pro.noOFTimeSold  == 0)? <span className="badge bg-success">New</span>:pro.noOFTimeSold} icon={<SellIcon/>} bg="#c9ffe5"/>
+                              <KeyValue keys="Price" value={<span className='badge bg-info'>₹ {pro.price}</span>} icon={<CurrencyRupeeIcon/>} bg="#c9ffe5"/>
+                              <KeyValue keys="Creator" value={pro.creator} icon={<EngineeringIcon/>} bg="#c9ffe5"/>
+                              <KeyValue keys="Requested" value={pro.requested} icon={<GroupAddIcon/>} bg="#c9ffe5"/>
                           {/* <ListGroupItem style={{background:"#c9ffe5"}}>Product Created Time: {new Date(pro.date * 1000).toString()}</ListGroupItem> */}
                           <PopOver actual={pro.date.length} message={
                               <ListGroup style={{background:"#48d1cc"}}>
@@ -311,7 +323,7 @@ function Company() {
                     size="small"
                     renderInput={(params) => <TextField {...params} label="Id" />}
                   />
-                    <Button className='' disabled>Type and Search</Button>
+                    <Button className='' disabled><ManageSearchIcon/></Button>
                   </div>
                   </Card.Footer>
                 </Card>
@@ -326,14 +338,16 @@ function Company() {
                         </Card.Header>
                         <Card.Body style={{background:"#c9ffe5"}}>
                         <ListGroup variant="flush"  >
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Name: {pro.name}</ListGroupItem>
-                          {/* <ListGroupItem style={{background:"#c9ffe5"}}>UniqId: {pro.uniqNumber}</ListGroupItem> */}
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Owned: {pro.owner} </ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Type: {pro.type_}</ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Number of time Sold: {(pro.noOFTimeSold  == 0)? <span className="badge bg-success">New</span>:pro.noOFTimeSold}</ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Price: <span className='badge bg-info'>₹ {pro.price}</span></ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Origin: {pro.creator}</ListGroupItem>
-                          <ListGroupItem style={{background:"#c9ffe5"}}>Requested: {pro.requested}</ListGroupItem>
+                              <KeyValue keys="Vehicel Identify Number" value={pro.name} icon={<FingerprintIcon/>} bg="#c9ffe5"/>
+                              {/* <ListGroupItem style={{background:"#F3E5F5"}}>UniqId: {pro.uniqNumber}</ListGroupItem> */}
+                              <KeyValue keys="Owned" value={pro.owner} icon={<FaceIcon/>} bg="#c9ffe5"/>
+                              <KeyValue keys="Type of the Vehicle" value={pro.type_} icon={<CarCrashIcon/>} bg="#c9ffe5"/>
+                              <KeyValue keys="Number of time Sold" value={(pro.noOFTimeSold  == 0)? <span className="badge bg-success">New</span>:pro.noOFTimeSold} icon={<SellIcon/>} bg="#c9ffe5"/>
+                              <KeyValue keys="Price" value={<span className='badge bg-info'>₹ {pro.price}</span>} icon={<CurrencyRupeeIcon/>} bg="#c9ffe5"/>
+                              <KeyValue keys="Creator" value={pro.creator} icon={<EngineeringIcon/>} bg="#c9ffe5"/>
+                              <KeyValue keys="Requested" value={pro.requested} icon={<GroupAddIcon/>} bg="#c9ffe5"/>
+
+                         
                           {/* <ListGroupItem style={{background:"#c9ffe5"}}>Product Created Time: {new Date(pro.date * 1000).toString()}</ListGroupItem> */}
                           <PopOver actual={pro.date.length} message={
                               <ListGroup style={{background:"#48d1cc"}}>

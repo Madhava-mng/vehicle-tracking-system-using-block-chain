@@ -15,8 +15,18 @@ import { ABI, ProgramID } from './abi';
 import back from '../png/back.png';
 import verified from '../png/verified.png'
 import { Alert } from '@mui/material'
-import { GridPrintExportMenuItem } from '@mui/x-data-grid';
 import CustomNav from './CustomNav';
+import KeyValue from './KeyValue';
+import ProgressBar from './ProgressBar';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
+
+
+import EngineeringIcon from '@mui/icons-material/Engineering';
+import EmojiTransportationIcon from '@mui/icons-material/EmojiTransportation';
+import BusinessIcon from '@mui/icons-material/Business';
+import AssuredWorkloadIcon from '@mui/icons-material/AssuredWorkload';
+
 
 
 function Company() {
@@ -45,6 +55,8 @@ function Company() {
   const [showOnly, setShowOnly] = useState("All");
   const [sortBy, setSortBy] = useState("Id");
   const [defaultEmployeeDetail, setDefaultEmployeeDetail] = useState([]);
+  const [backd, setBackd] = useState(<></>);
+
 
   async function getDetails(){
     setLoading(true);
@@ -55,6 +67,7 @@ function Company() {
     setDefaultEmployeeDetail(data_);
     console.log(data_)
     setTimeout(() => {setLoading(false)}, 4300);
+    setBackd(<></>)
     // setLoading(false);
   }
   useEffect(() => {
@@ -156,10 +169,14 @@ function Company() {
   
     
     
-    useEffect(() => {connectWallet()}, [])
+    useEffect(() => {
+      connectWallet();
+      setBackd(<Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={true} ><CircularProgress color="inherit" /></Backdrop>);
+    }, [])
     
     return (
       <div>
+        {backd}
         <CustomNav backTo="/seller" loadingColor="primary" loading={loading} balance={balance} funcs={() => {connectWallet();getDetails()}}/>
       
 
@@ -171,16 +188,18 @@ function Company() {
         <Card.Body className='p-1 m-5 ms-5'>
           <Card className='mb-2 bg-opacity-10' style={{"textAlign":"left"}} >
             <Card.Header style={{background:"#deb887"}}>
-              <h5>Owner: {account}</h5>
+              <h5>{account}</h5>
             </Card.Header>
             <Card.Body style={{background:"#FFF8E1"}}>
+
               {details[0] != ''?
             <ListGroup variant="flush" >
-                <ListGroup.Item style={{background:"#FFF8E1"}}>Name: {details[0]} {(details[2] > 0)? <img src={verified} style={{maxBlockSize:'25px'}}/>:<></>}</ListGroup.Item>
-                <ListGroup.Item style={{background:"#FFF8E1"}}>No Of Employee: {(details[2] == 0)? <span className="badge bg-warning">Nil</span>:details[2]}</ListGroup.Item>
-                <ListGroup.Item style={{background:"#FFF8E1"}}>No Of Products: {(details[3] == 0)? <span className="badge bg-warning">Nil</span>:details[3]}</ListGroup.Item>
-                <ListGroup.Item style={{background:"#FFF8E1"}}>Company Status: {(details[4])?  <span className="badge bg-success">Open</span>:<span className="badge bg-danger">Close</span>}</ListGroup.Item>
-                <ListGroup.Item style={{background:"#FFF8E1"}}></ListGroup.Item>
+ 
+              <KeyValue keys="Name" value={<>{details[0]} {(details[2] > 0)? <img src={verified} style={{maxBlockSize:'25px'}}/>:<></>}</>} icon={<BusinessIcon />} bg="#FFF8E1"/>
+              <KeyValue keys="Number of Employee" value={(details[2] == 0)? <span className="badge bg-warning">Nil</span>:details[2]} icon={<EngineeringIcon />} bg="#FFF8E1"/>
+              <KeyValue keys="Number of Vehicle" value={(details[3] == 0)? <span className="badge bg-warning">Nil</span>:details[3]} icon={<EmojiTransportationIcon />} bg="#FFF8E1"/>
+              <KeyValue keys="Company Status" value={(details[4])?  <span className="badge bg-success">Open</span>:<span className="badge bg-danger">Close</span>} icon={<AssuredWorkloadIcon/>} bg="#FFF8E1"/>
+               
             </ListGroup>
             :<></>}
             </Card.Body>
@@ -272,10 +291,11 @@ function Company() {
                         <Card.Header style={{background:"#f6eabe"}}>
                         {emp.owner} {(emp.inside)? <span className="badge bg-success">Access</span>:<span className="badge bg-danger">Kicked</span>}  {(loading)? <span className="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>:<></>}
                         </Card.Header>
+                        {(loading)? <ProgressBar color="inherit"/>:<></>}
                         <Card.Body style={{background:"#FFF8E1"}}>
                         <ListGroup variant="flush" >
-                          <ListGroupItem style={{background:"#FFF8E1"}}>Name: {emp.name}</ListGroupItem>
-                          <ListGroupItem style={{background:"#FFF8E1"}}>Product Count: {emp.product_count}</ListGroupItem>
+                          <KeyValue keys="Name" value={emp.name} icon={<EngineeringIcon />} bg="#FFF8E1"/>
+                          <KeyValue keys="Number of Vehicle" value={emp.product_count} icon={<EmojiTransportationIcon />} bg="#FFF8E1"/>
                         </ListGroup>
                         </Card.Body>
                         <Card.Footer style={{background:"#f6eabe"}}>
