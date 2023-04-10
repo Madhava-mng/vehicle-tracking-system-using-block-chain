@@ -289,7 +289,7 @@ function Company() {
                       <Col>
                     <Card  key={`${emp.owner}`} className='mb-2' id='card-bodys'>
                         <Card.Header style={{background:"#f6eabe"}}>
-                        {emp.owner} {(emp.inside)? <span className="badge bg-success">Access</span>:<span className="badge bg-danger">Kicked</span>}  {(loading)? <span className="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>:<></>}
+                        {emp.owner} {(emp.inside)? <span className="badge bg-success">Access</span>:<span className="badge bg-danger">Kicked</span>} 
                         </Card.Header>
                         {(loading)? <ProgressBar color="inherit"/>:<></>}
                         <Card.Body style={{background:"#FFF8E1"}}>

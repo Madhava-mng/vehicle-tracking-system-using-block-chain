@@ -11,13 +11,17 @@ import Web3 from 'web3';
 import {MDBTabs,MDBTabsItem,MDBTabsLink,MDBTabsContent,MDBTabsPane} from 'mdb-react-ui-kit';
 import { ABI, ProgramID } from './abi';
 import back from '../png/back.png';
-import { Alert, Popover } from '@mui/material'
+import { Alert } from '@mui/material'
 import CustomNav from './CustomNav';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import PopOver from './PopOver';
 import verified from '../png/verified.png'
 import KeyValue from './KeyValue';
+import {Autocomplete,TextField }from '@mui/material';
+import copy from 'clipboard-copy'
+import './Animation.css'
+
 
 
 import EngineeringIcon from '@mui/icons-material/Engineering';
@@ -29,9 +33,11 @@ import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import SellIcon from '@mui/icons-material/Sell';
 import CarCrashIcon from '@mui/icons-material/CarCrash';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+
 
 function Company() {
-
+  
   const [hover, setHovering] = useState(4);
   const [iconsActive, setIconsActive] = useState('tab1');
   const [account, setAccount] = useState("");
@@ -39,7 +45,8 @@ function Company() {
   const contract = new web3.eth.Contract(ABI,ProgramID);
   const [tmp, setTmp] = useState(true);
   const [loading, setLoading] = useState(true);
-
+  
+  const [select , setSelect] = useState([]);
   const [details, setDetails] = useState([]);
   const [productDetails, setProductDetails] = useState([]);
 
@@ -262,6 +269,7 @@ function Company() {
                     <select onClick={(e)=> {setShowOnly( e.target.value)}} className="form-control form-select" style={{maxWidth: '150px', marginLeft:'-5px'}}>
                       <option className="form-control rounded" selected>All</option>
                       <option className="form-control rounded">Minted</option>
+                      <option className="form-control rounded">Only</option>
                       <option className="form-control rounded">Not Minted</option>
                       <option className="form-control rounded">Sold</option>
                       <option className="form-control rounded">Requested</option>
@@ -285,6 +293,18 @@ function Company() {
                       <Button className='btn-secondary' onClick={() => {let tmp = productDetails.slice().reverse(); setProductDetails(tmp)}}>Inverte</Button>
                     </div>
                           <Form className="d-flex">
+                            {(showOnly == 'Only')?
+                              <Autocomplete
+                                className='bg-white rounded'
+                                varient='secondary'
+                                onChange={(e, value) => { productDetails.map(e => {setSelect(value)})}} 
+                                disablePortal
+                                options={productDetails.map(e => e.id)}
+                                sx={{ width: 510 }}
+                                size="small"
+                                renderInput={(params) => <TextField {...params} label="Vehicle Id" />}
+                              />:<></>
+                          }
                           </Form>
                         </Offcanvas.Body>
                       </Navbar.Offcanvas>
@@ -294,18 +314,23 @@ function Company() {
 
                 <Row xs={1} md={3} className="g-2 p-2 rounded"  style={{background:""}} >
                 {productDetails.map((pro) => {
-                  console.log(`*${showOnly}*`);
-                  if(showOnly == 'All' || 
+                  console.log(`*${showOnly}* ====${select}====`);
+                  if( (showOnly == 'All' || showOnly == 'Only' ||
                   (showOnly == 'Minted' && pro.mintable && pro.owner == pro.creator) || 
                   (showOnly == "Not Minted" && !pro.mintable) || (showOnly == "Sold" && pro.owner != pro.creator) || 
-                  (showOnly == "Requested" && pro.requested != '0x0000000000000000000000000000000000000000' && pro.owner == account)){
+                  (showOnly == "Requested" && pro.requested != '0x0000000000000000000000000000000000000000' && pro.owner == account))){
+                    
+                    if(select != pro.id && showOnly == "Only"){
+                      return
+                    }
                       return (
                         <Col>
-                          <Card className='mb-3'>
+                          <Card className='mb-3 cardh '>
                             <Card.Header style={{background:"#CE93D8"}}>
-                              # {pro.id} {(pro.owner == pro.creator)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-info">Sold</span>}
+                              # {pro.id} <ContentCopyIcon  style={{cursor:'pointer'}} variant="contained" onClick={() => {copy(`${pro.id}`);setAltErr(<Alert show={true}  className='m-3' severity="success" onClose={() => {setAltErr(<></>)}}>Copied {pro.id}</Alert>)}}> </ContentCopyIcon>
+                               {(pro.owner == pro.creator)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-info">Sold</span>}
                             </Card.Header>
-                            <Card.Body style={{background:"#F3E5F5"}}>
+                            <Card.Body style={{background:"#F3E5F5"}} className="rounded">
                             <ListGroup variant="flush">
                               <KeyValue keys="Vehicel Identify Number" value={pro.name} icon={<FingerprintIcon/>} bg="#F3E5F5"/>
                               {/* <ListGroupItem style={{background:"#F3E5F5"}}>UniqId: {pro.uniqNumber}</ListGroupItem> */}

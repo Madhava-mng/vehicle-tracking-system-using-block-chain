@@ -17,6 +17,8 @@ import { DataGrid } from '@mui/x-data-grid';
 import CustomNav from './CustomNav';
 import { GridRowParams } from '@mui/x-data-grid';
 import {Autocomplete,Avatar,TableBody,TextField }from '@mui/material';
+import { Alert } from '@mui/material'
+import copy from 'clipboard-copy'
 import PopOver from './PopOver';
 import KeyValue from './KeyValue';
 
@@ -29,6 +31,8 @@ import CarCrashIcon from '@mui/icons-material/CarCrash';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import EngineeringIcon from '@mui/icons-material/Engineering';
 import ManageSearchIcon from '@mui/icons-material/ManageSearch';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+
 
 
 function Company() {
@@ -54,6 +58,7 @@ function Company() {
   const [mintedProduct, setMintedProduct] = useState([]);
 
   const [select , setSelect] = useState([]);
+  const [altErr, setAltErr] = useState();
 
   function handleIconsClick(value) {
     if (value === iconsActive) {
@@ -93,6 +98,7 @@ function Company() {
     try{
       const minted = await contract.methods.getAllMintedProducts().call({from:account});
       setMintedProduct(minted);
+      console.log(minted)
     }catch(e){
       
     }
@@ -229,6 +235,7 @@ function Company() {
             </MDBTabs>
 
             <MDBTabsContent >
+            {altErr}
               <MDBTabsPane show={iconsActive === 'tab1'} style={{textAlign:'left'}} className='m-0 p-2 rounded' >
 
 
@@ -238,7 +245,8 @@ function Company() {
                     <Col>
                       <Card className='mb-3'>
                         <Card.Header style={{background:"#48d1cc"}}>
-                          # {pro.id} {(pro.owner == account)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-danger">Sold</span>}
+                          # {pro.id} <ContentCopyIcon style={{cursor:'pointer'}} variant="contained" onClick={() => {copy(`${pro.id}`);setAltErr(<Alert show={true}  className='m-3' severity="success" onClose={() => {setAltErr(<></>)}}>Copied {pro.id}</Alert>)}}> </ContentCopyIcon>
+                           {(pro.owner == account)? (pro.mintable)? <span className="badge bg-success">Minted</span>:<span className="badge bg-danger">Not Minted</span>:<span className="badge bg-danger">Sold</span>}
                         </Card.Header>
                         <Card.Body style={{background:"#c9ffe5"}}>
                         <ListGroup variant="flush"  >
@@ -295,7 +303,7 @@ function Company() {
                       initialState={{
                         pagination: {
                           paginationModel: {
-                            pageSize: 3,
+                            pageSize: 5,
                           },
                         },
                       }}
